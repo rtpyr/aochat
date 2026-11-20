@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AO3 Chat Mockup Studio</title>
+<style>
+ :root{color-scheme:light;--bg:#f4f4f2;--panel:#fff;--ink:#1d1d1f;--muted:#6b6b70;--line:#e3e3e0;
+   --accent:#5c4ee5;--warn:#b4451f;--ok:#2e7d32;
+   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+ /* one scrollbar style everywhere in the studio. The preview frame is
+    deliberately left alone so it keeps rendering the way AO3 would. */
+ *{scrollbar-width:thin;scrollbar-color:#c6c6c1 transparent}
+ ::-webkit-scrollbar{width:10px;height:10px}
+ ::-webkit-scrollbar-track{background:transparent}
+ ::-webkit-scrollbar-thumb{background:#c6c6c1;border-radius:8px;
+   border:2px solid var(--panel);background-clip:padding-box}
+ ::-webkit-scrollbar-thumb:hover{background:#a9a9a3;background-clip:padding-box}
+ ::-webkit-scrollbar-corner{background:transparent}
+ ::-webkit-scrollbar-button{display:none;width:0;height:0}
+ *{box-sizing:border-box}html,body{margin:0;height:100%}
+ body{font-family:var(--sans);background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100vh;overflow:hidden;font-size:13px}
+ header{padding:9px 14px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;align-items:center;gap:10px;flex:0 0 auto}
+ header h1{font-size:14px;margin:0;font-weight:600}
+ .sub{font-size:11.5px;color:var(--muted)}
+ main{flex:1;display:flex;min-height:0}
+ .col{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
+ .col:last-child{border-right:none}
+ #build{flex:0 0 300px;overflow-y:auto;background:var(--panel);padding:12px}
+ #mid{flex:1}
+ #out{flex:0 0 340px}
+ label.f{display:block;font-size:11px;color:var(--muted);margin:10px 0 3px;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+ input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff;color:var(--ink)}
+ .skins{display:flex;gap:6px;flex-wrap:wrap}
+ .skin{flex:1;padding:7px 4px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px;text-align:center}
+ .skin.on{border-color:var(--accent);background:#f2f1fd;color:var(--accent);font-weight:600}
+ .msg{border:1px solid var(--line);border-radius:7px;padding:7px;margin-bottom:6px;background:#fcfcfb}
+ .msg .top{display:flex;gap:5px;align-items:center;margin-bottom:5px}
+ .msg .side{flex:1;padding:3px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);cursor:pointer;font:inherit;font-size:11px}
+ .msg .side.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+ .msg textarea{width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;background:#fff;color:var(--ink);font:inherit;font-size:12px;resize:vertical;min-height:34px}
+ .msg .rm{border:none;background:none;color:var(--warn);cursor:pointer;font-size:14px;padding:0 4px}
+ .msg .tm{width:62px;padding:3px 5px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);font:inherit;font-size:11px}
+ button.add{width:100%;padding:7px;border:1px dashed var(--line);border-radius:7px;background:#fff;color:var(--accent);cursor:pointer;font:inherit;font-weight:600}
+ .head{padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex:0 0 auto}
+ iframe{flex:1;width:100%;border:none;background:#fff;min-height:0}
+ .tabs{display:flex;gap:2px;padding:6px 8px 0;background:var(--panel);border-bottom:1px solid var(--line);flex:0 0 auto}
+ .tab{font:inherit;font-size:11.5px;padding:5px 10px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:6px 6px 0 0}
+ .skin:hover,.copy button:hover{border-color:var(--accent)}
+ .tab.on{color:var(--accent);background:var(--bg);font-weight:600}
+ pre{flex:1;margin:0;overflow:auto;padding:10px;font-family:var(--mono);font-size:11px;line-height:1.45;background:#fbfbfa;white-space:pre-wrap;word-break:break-word}
+ .pane{display:none;flex:1;flex-direction:column;min-height:0}
+ .pane.on{display:flex}
+ .copy{padding:6px 10px;border-top:1px solid var(--line);background:var(--panel);display:flex;gap:6px}
+ .copy button{flex:1;padding:6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px}
+ .copy button:hover{border-color:var(--accent);color:var(--accent)}
+ .lint{flex:0 0 auto;max-height:130px;overflow:auto;border-top:1px solid var(--line);background:var(--panel);font-family:var(--mono);font-size:11px}
+ .lrow{padding:3px 10px;border-bottom:1px solid #f3f3f1;color:var(--warn)}
+ .lrow.ok{color:var(--ok);font-family:var(--sans);padding:7px 10px}
+ .hbtn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;
+   width:27px;height:24px;cursor:pointer;font:inherit;font-size:13px;line-height:1;padding:0;margin-left:4px}
+ .hbtn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+ .hbtn:disabled{opacity:.3;cursor:default}
+ .badge{font-size:10.5px;padding:1px 7px;border-radius:10px;background:#efeefb;color:var(--accent)}
+ .badge.red{background:#fdeee9;color:var(--warn)}
+ .note{font-size:11px;color:var(--muted);line-height:1.45;margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <h1>AO3 Chat Mockup Studio</h1>
+  <span style="flex:1"></span>
+  <span class="badge" id="vstat">clean</span>
+</header>
+<main>
+  <!-- ============ BUILDER ============ -->
+  <div class="col" id="build">
+    <label class="f">Skin</label>
+    <div class="skins" id="skins"></div>
+    <label class="f">Phone size</label>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span style="font-size:11px;color:var(--muted);width:38px">Width</span>
+      <input type="range" id="sw" min="220" max="420" step="10" value="300" style="flex:1">
+      <span id="swv" style="font-size:11px;width:40px;text-align:right">300px</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:5px">
+      <span style="font-size:11px;color:var(--muted);width:38px">Screen</span>
+      <input type="range" id="sh" min="200" max="560" step="20" value="360" style="flex:1">
+      <span id="shv" style="font-size:11px;width:40px;text-align:right">360px</span>
+    </div>
+    <label class="f">Contact name</label>
+    <input type="text" id="cname" value="Maya Rivera">
+    <label class="f">Status line</label>
+    <input type="text" id="cstat" value="online">
+    <label class="f">Messages</label>
+    <div id="msgs"></div>
+    <button class="add" id="addm">+ Add message</button>
+  </div>
+
+  <!-- ============ PREVIEW ============ -->
+  <div class="col" id="mid">
+    <div class="head"><span>Preview</span><span style="flex:1"></span>
+      <button class="hbtn" id="undo" title="Undo (Ctrl/Cmd+Z)" disabled>↶</button>
+      <button class="hbtn" id="redo" title="Redo (Ctrl/Cmd+Shift+Z)" disabled>↷</button></div>
+    <iframe id="pv" sandbox="allow-scripts" title="AO3 preview"></iframe>
+    <div class="lint" id="lint"></div>
+  </div>
+
+  <!-- ============ OUTPUT ============ -->
+  <div class="col" id="out">
+    <div class="tabs">
+      <button class="tab on" data-p="html">HTML</button>
+      <button class="tab" data-p="css">CSS</button>
+    </div>
+    <div class="pane on" id="p-html"><pre id="o-html"></pre></div>
+    <div class="pane" id="p-css"><pre id="o-css"></pre></div>
+    <div class="copy">
+      <button id="cpH">Copy HTML</button><button id="cpC">Copy CSS</button>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ===================================================================
+   AO3 ground truth — from otwcode/otwarchive
+     config.yml ................ SUPPORTED_CSS_PROPERTIES / SHORTHAND
+     lib/css_cleaner.rb ........ scoping + property/value rules
+     sanitizer_config.rb ....... allowed elements + attributes
+   =================================================================== */
+const PROPS=new Set(`-replace -use-link-source accelerator accent-color align-content
+align-items align-self alignment-adjust alignment-baseline appearance aspect-ratio azimuth
+baseline-shift behavior binding bookmark-label bookmark-level bookmark-target bottom box-align
+box-direction box-flex box-flex-group box-lines box-orient box-pack box-shadow box-sizing
+caption-side clear clip color color-profile color-scheme content counter-increment counter-reset
+crop cue cue-after cue-before cursor direction display dominant-baseline elevation empty-cells
+fill filter fit fit-position float float-offset font font-effect font-emphasize font-family
+font-size font-size-adjust font-smooth font-stretch font-style font-variant font-weight
+grid-columns grid-rows hanging-punctuation height hyphens icon image-orientation image-resolution
+ime-mode inline-box-align justify-content layout-flow left letter-spacing line-break line-height
+mark marks max-height max-width min-height min-width move-to opacity order orphans page
+page-policy pitch position presentation-level punctuation-trim quotes rendering-intent resize
+rest richness right rotation ruby-align ruby-overhang ruby-position ruby-span size speak
+speech-rate stress string-set stroke stroke-width tab-side table-layout target top unicode-bidi
+user-select vertical-align visibility voice-family volume white-space widows width word-break
+word-spacing word-wrap writing-mode z-index`.trim().split(/\s+/));
+const SHORT=`background border column cue flex font layer-background layout-grid list-style
+margin marker outline overflow padding page-break pause scrollbar text transform
+transition`.trim().split(/\s+/);
+
+/* AO3's shorthand test is an UNANCHORED regex: substring match. That is why
+   border-radius / margin-top / text-align survive despite not being listed. */
+function propOk(p){
+  if(p.startsWith('--')||PROPS.has(p)) return true;
+  const b=p.replace(/^-(webkit|moz|ms|o)-/,'');
+  if(b!==p&&PROPS.has(b)) return true;
+  return SHORT.some(s=>p.includes(s));
+}
+const EL=new Set(`a abbr acronym address b big blockquote br caption center cite code col
+colgroup details figcaption figure dd del dfn div dl dt em h1 h2 h3 h4 h5 h6 hr i img ins kbd li
+ol p pre q rp rt ruby s samp small span strike strong sub summary sup table tbody td tfoot th
+thead tr tt u ul var`.trim().split(/\s+/));
+const GATTR=new Set(['align','dir','lang','title','class']);
+const PEREL={a:['href','name'],img:['align','alt','border','height','src','width'],
+  td:['abbr','axis','colspan','height','rowspan','width'],
+  th:['abbr','axis','colspan','height','rowspan','scope','width'],
+  ol:['start','type'],ul:['type'],details:['open'],hr:['align','width'],
+  table:['border','summary','width'],col:['span','width'],colgroup:['span','width'],
+  blockquote:['cite'],q:['cite']};
+const NUKE=new Set(['iframe','math','noembed','noframes','noscript','plaintext','script','style','svg','xmp']);
+
+/* ---- cleaners (what AO3 would keep) ---- */
+function cleanHtml(src){
+  const bad=[],doc=new DOMParser().parseFromString(src,'text/html');
+  (function w(n){[...n.children].forEach(el=>{
+    const t=el.tagName.toLowerCase();
+    if(NUKE.has(t)){bad.push('<'+t+'> removed with contents');el.remove();return;}
+    if(!EL.has(t)){bad.push('<'+t+'> unwrapped');const p=el.parentNode;
+      while(el.firstChild)p.insertBefore(el.firstChild,el);p.removeChild(el);return;}
+    [...el.attributes].forEach(a=>{const n2=a.name.toLowerCase();
+      if(!(GATTR.has(n2)||(PEREL[t]||[]).includes(n2))){bad.push(n2+' on <'+t+'> stripped');el.removeAttribute(a.name);}
+      else if(t==='img'&&n2==='src'&&!/^https?:/i.test(a.value)){bad.push('img src must be http(s)');el.removeAttribute('src');}});
+    w(el);});})(doc.body);
+  return {html:doc.body.innerHTML,bad};
+}
+function cleanCss(css){
+  const bad=[];let out='';
+  css.replace(/\/\*[\s\S]*?\*\//g,'').replace(/([^{}]+)\{([^}]*)\}/g,(m,sel,decl)=>{
+    const keep=[];
+    decl.split(';').forEach(d=>{const i=d.indexOf(':');if(i<0)return;
+      const p=d.slice(0,i).trim().toLowerCase(),v=d.slice(i+1).trim();
+      if(!p||!v)return;
+      if(!propOk(p)){bad.push('"'+p+'" stripped by AO3');return;}
+      if(/url\s*\(/i.test(v)&&!/^(background|border|list-style)(-image)?$/.test(p)){
+        bad.push('url() not allowed on "'+p+'"');return;}
+      keep.push(p+':'+v);});
+    const s=sel.split(',').map(x=>{x=x.trim();return x?(x.startsWith('#workskin')?x:'#workskin '+x):'';})
+      .filter(Boolean).join(', ');
+    if(s&&keep.length) out+=s+'{'+keep.join(';')+';}\n';
+    return '';});
+  return {css:out,bad};
+}
+
+/* ===================================================================
+   SKINS — pure-CSS phone chrome. No svg, no url(), no gap, no id/style.
+   Layout uses float + inline-block, the pattern AO3 workskins rely on.
+   =================================================================== */
+const SKINS={
+ whatsapp:{label:'WhatsApp',chat:'#ece5dd',mine:'#d9fdd3',theirs:'#ffffff',
+   head:'#f0f2f5',headInk:'#111b21',tick:'✓✓',accent:'#54656f',avR:'50%'},
+ imessage:{label:'iMessage',chat:'#ffffff',mine:'#3797f0',theirs:'#e9e9eb',
+   head:'#f6f6f6',headInk:'#000000',tick:'',accent:'#007aff',mineInk:'#ffffff',avR:'50%'},
+ line:{label:'LINE',chat:'#8ca9c6',mine:'#8de055',theirs:'#ffffff',
+   head:'#ffffff',headInk:'#111111',tick:'',accent:'#06c755',avR:'50%'},
+ /* Measured from the Figma community file "Copying Kakaotalk":
+    bound variables kt/chatMessage #282A2B, kt/chatBaloonBGWhite #FFFFFF;
+    colours sampled off the rendered frame; geometry from node metadata
+    (414x896 frame, 395 message column, 68px row pitch on 61px rows,
+    34px rounded-square avatar, 78px input board). */
+ kakao:{label:'KakaoTalk',chat:'#afc0cf',mine:'#fae64c',theirs:'#ffffff',
+   head:'#afc0cf',headInk:'#282a2b',tick:'',accent:'#282a2b',mineInk:'#282a2b',
+   comp:'#f8f8f8',avR:'12px',nameAbove:true,timeOutside:true}
+};
+const PFX='chat';   // class prefix — change here, everything follows
+
+function buildCss(k,w,h){
+  const s=SKINS[k],mi=s.mineInk||'#111111',comp=s.comp||s.head,P=PFX;
+  return `.${P}-phone {
+  width: 100%; max-width: ${w}px; margin: 1.5em auto;
+  border: 5px solid #1f2024; border-radius: 30px;
+  background: ${s.chat}; overflow: hidden; box-sizing: border-box;
+  font-family: Helvetica, Arial, sans-serif; font-size: 13px;
+  line-height: 1.35; color: #111111;
+}
+
+/* ---- status bar: clock is text, signal is decoration ---- */
+.${P}-bar {
+  background: ${s.head}; color: ${s.headInk}; margin: 0;
+  padding: 9px 14px 3px; height: 25px; font-size: 10.5px; font-weight: bold;
+}
+.${P}-bar::after { content: "▮▮▮"; float: right; font-size: 9px; letter-spacing: 1px; }
+
+/* ---- header: back chevron is decoration ---- */
+.${P}-head {
+  background: ${s.head}; color: ${s.headInk}; margin: 0;
+  border-bottom: 1px solid #00000014; padding: 8px 12px 10px; min-height: 44px;
+}
+.${P}-head::before {
+  content: "‹"; float: left; color: ${s.accent};
+  font-size: 19px; line-height: 30px; margin-right: 8px; font-weight: bold;
+}
+.${P}-av {
+  float: left; width: 30px; height: 30px; line-height: 30px; text-align: center;
+  border-radius: ${s.avR}; background: ${s.accent}; color: #ffffff;
+  font-size: 11px; font-weight: bold; margin-right: 8px;
+}
+.${P}-nm { display: block; font-size: 14px; font-weight: bold; padding-top: 1px; }
+.${P}-on { display: block; font-size: 10.5px; color: #6b7a86; line-height: 13px; }
+
+/* ---- conversation ---- */
+.${P}-body { background: ${s.chat}; padding: 11px 8px 14px; min-height: ${h}px; }
+.${P}-day { text-align: center; margin: 0 0 11px; }
+.${P}-daytag {
+  background: #ffffffcc; color: #54656f; font-size: 10.5px;
+  padding: 3px 10px; border-radius: 8px;
+}
+.${P}-row { margin: 0 0 7px; clear: both; overflow: hidden; }
+.${P}-in { text-align: left; }
+.${P}-out { text-align: right; }
+.${P}-bub {
+  display: inline-block; max-width: 78%; text-align: left;
+  background: ${s.theirs}; color: #111111;
+  border-radius: 9px; padding: 6px 9px 6px;
+  font-size: 13px; line-height: 1.35;
+  word-wrap: break-word; overflow-wrap: break-word; box-sizing: border-box;
+  box-shadow: 0 1px 0.5px #0000001f;
+}
+.${P}-mine { background: ${s.mine}; color: ${mi}; }
+.${P}-time {
+  display: block; text-align: right; font-size: 9.5px;
+  line-height: 1.2; color: #00000073; margin: 2px 0 0;
+}
+.${P}-mine .${P}-time { color: ${mi==='#ffffff'?'#ffffffbb':'#00000073'}; }
+
+/* ---- skins that hang the name above and the time beside the bubble ---- */
+.${P}-av2 {
+  float: left; width: 34px; height: 34px; line-height: 34px; text-align: center;
+  border-radius: ${s.avR}; background: #d7dce0; color: #5b6770;
+  font-size: 11px; font-weight: bold; margin-right: 7px;
+}
+.${P}-stack { display: inline-block; max-width: 78%; vertical-align: top; }
+.${P}-who { display: block; font-size: 11px; color: #3f4a52; margin: 0 0 3px; line-height: 1.2; }
+.${P}-ot { display: inline-block; vertical-align: bottom; font-size: 9.5px; color: #4a555e; margin: 0 3px; }
+
+/* ---- compose bar and home indicator: all decoration ---- */
+.${P}-comp {
+  background: ${comp}; padding: 9px 12px; color: #7d8a94; font-size: 12px; margin: 0;
+}
+.${P}-comp::before { content: "+"; display: inline-block; width: 16px; font-size: 17px; vertical-align: middle; }
+.${P}-comp::after { content: "●"; float: right; font-size: 13px; line-height: 26px; }
+.${P}-field {
+  display: inline-block; width: 70%; background: #ffffff; border: 1px solid #00000014;
+  border-radius: 18px; padding: 5px 11px; color: #9aa4ad; box-sizing: border-box;
+}
+.${P}-field::before { content: "Message"; }
+.${P}-home { background: ${comp}; text-align: center; padding: 5px 0 8px; margin: 0; }
+.${P}-home::before {
+  content: ""; display: inline-block; background: #222222;
+  border-radius: 6px; width: 84px; height: 4px;
+}
+`;
+}
+
+/* Pretty-printer: one declaration per line, like FicFormatter's Format CSS.
+   Whitespace-only — it cannot change what AO3 keeps. */
+function formatCss(css){
+  const out=[]; const re=/(\/\*[\s\S]*?\*\/)|([^{}]+)\{([^}]*)\}/g; let m;
+  while((m=re.exec(css))!==null){
+    if(m[1]){ out.push(m[1].trim()); continue; }
+    const sel=m[2].trim().replace(/\s*,\s*/g,', ').replace(/\s+/g,' ');
+    if(!sel) continue;
+    const decls=m[3].split(';').map(d=>d.trim()).filter(Boolean).map(d=>{
+      const i=d.indexOf(':');
+      return i<0 ? d : d.slice(0,i).trim()+': '+d.slice(i+1).trim().replace(/\s+/g,' ');
+    });
+    out.push(sel+' {\n'+decls.map(d=>'  '+d+';').join('\n')+'\n}');
+  }
+  return out.join('\n')+'\n';
+}
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function buildHtml(st){
+  const s=SKINS[st.skin],P=PFX;
+  const ini=st.name.trim().split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase()||'?';
+  const rows=st.msgs.map(m=>{
+    const me=m.from==='me';
+    const tick=(me&&s.tick)?' '+s.tick:'';
+    // Skins like KakaoTalk hang the time outside the bubble, name above it.
+    if(s.timeOutside){
+      const bub=`<span class="${P}-bub${me?' '+P+'-mine':''}">`+esc(m.text)+`</span>`;
+      const t=`<span class="${P}-ot">`+esc(m.time)+`</span>`;
+      if(me) return `    <p class="${P}-row ${P}-out">`+t+bub+`</p>`;
+      return `    <p class="${P}-row ${P}-in"><span class="${P}-av2">`+esc(ini)+`</span><span class="${P}-stack">`
+        +(s.nameAbove?`<span class="${P}-who">`+esc(st.name)+`</span>`:'')+bub+`</span>`+t+`</p>`;
+    }
+    return `    <p class="${P}-row ${P}-${me?'out':'in'}"><span class="${P}-bub${me?' '+P+'-mine':''}">`
+      +esc(m.text)+` <span class="${P}-time">`+esc(m.time)+tick+`</span></span></p>`;
+  }).join('\n');
+  return `<div class="${P}-phone">
+  <p class="${P}-bar">9:41</p>
+  <p class="${P}-head"><span class="${P}-av">${esc(ini)}</span><span class="${P}-nm">${esc(st.name)}</span><span class="${P}-on">${esc(st.status)}</span></p>
+  <div class="${P}-body">
+    <p class="${P}-day"><span class="${P}-daytag">Today</span></p>
+${rows}
+  </div>
+  <p class="${P}-comp"><span class="${P}-field"></span></p>
+  <p class="${P}-home"></p>
+</div>`;
+}
+
+/* ---- AO3 base (still approximate — reader's site skin varies) ---- */
+const BASE=`html,body{margin:0}body{background:#fff;color:#2a2a2a;
+ font-family:'Lucida Grande','Lucida Sans Unicode',Verdana,Helvetica,sans-serif;
+ font-size:100%;line-height:1.5;padding:14px}
+ #workskin{max-width:72em;margin:0 auto}
+ .userstuff p{margin:0 0 1.286em}.userstuff a{color:#111}
+ .userstuff blockquote{margin:1em 2em}`;
+
+/* ---- state + wiring ---- */
+const st={skin:'whatsapp',w:300,h:360,name:'Maya Rivera',status:'online',msgs:[
+ {from:'them',text:'did you tell Sam dinner is at 8?',time:'9:41'},
+ {from:'me',text:'I told him 7:30.',time:'9:41'},
+ {from:'them',text:"smart. he'll arrive at 8.",time:'9:42'}]};
+const $=s=>document.querySelector(s);
+
+function drawSkins(){
+  $('#skins').innerHTML=Object.entries(SKINS).map(([k,v])=>
+    `<button class="skin${k===st.skin?' on':''}" data-k="${k}">${v.label}</button>`).join('');
+  $('#skins').querySelectorAll('.skin').forEach(b=>b.onclick=()=>{st.skin=b.dataset.k;drawSkins();render();});
+}
+function drawMsgs(){
+  $('#msgs').innerHTML=st.msgs.map((m,i)=>`
+    <div class="msg">
+      <div class="top">
+        <button class="side${m.from==='them'?' on':''}" data-i="${i}" data-s="them">Them</button>
+        <button class="side${m.from==='me'?' on':''}" data-i="${i}" data-s="me">Me</button>
+        <input class="tm" data-i="${i}" value="${m.time}">
+        <button class="rm" data-i="${i}">&times;</button>
+      </div>
+      <textarea data-i="${i}">${m.text.replace(/</g,'&lt;')}</textarea>
+    </div>`).join('');
+  const box=$('#msgs');
+  box.querySelectorAll('.side').forEach(b=>b.onclick=()=>{st.msgs[+b.dataset.i].from=b.dataset.s;drawMsgs();render();});
+  box.querySelectorAll('.rm').forEach(b=>b.onclick=()=>{st.msgs.splice(+b.dataset.i,1);drawMsgs();render();});
+  box.querySelectorAll('textarea').forEach(t=>t.oninput=()=>{st.msgs[+t.dataset.i].text=t.value;render();});
+  box.querySelectorAll('.tm').forEach(t=>t.oninput=()=>{st.msgs[+t.dataset.i].time=t.value;render();});
+}
+
+/* ---- preview editing -------------------------------------------------
+   Runs INSIDE the preview frame and reports edits out by postMessage, so
+   it never depends on the parent reading contentDocument. The styles are
+   cursor / hover / focus only, so the static render AO3 would produce is
+   unchanged. ---------------------------------------------------------- */
+const EDIT_CSS=`
+.ao3t{cursor:text;outline:none}
+.ao3t:hover{outline:1px dashed rgba(92,78,229,.35);outline-offset:2px;border-radius:4px}
+.ao3t:focus{outline:2px solid #5c4ee5;outline-offset:2px;border-radius:5px}
+`;
+const EDIT_JS=`(function(){var P=${JSON.stringify(PFX)};
+// Wrap only the message text so the focus ring hugs the words. Preview-only.
+function wrap(bub){if(!bub)return null;var kids=[],i,n;
+  for(i=0;i<bub.childNodes.length;i++){n=bub.childNodes[i];
+    if(n.nodeType===1&&String(n.className).indexOf(P+'-time')>-1)break;
+    kids.push(n);}
+  if(!kids.length)return null;
+  var w=document.createElement('span');w.className='ao3t';
+  bub.insertBefore(w,kids[0]);
+  for(i=0;i<kids.length;i++)w.appendChild(kids[i]);
+  return w;}
+// Editable from the start: the browser handles caret placement, double-click
+// word select and drag select natively. No dblclick handler fighting it.
+function bind(el,kind,idx){if(!el)return;
+  el.setAttribute('contenteditable','true');
+  el.setAttribute('spellcheck','false');
+  el.addEventListener('input',function(){
+    parent.postMessage({ao3edit:1,kind:kind,idx:idx,value:el.textContent},'*');});
+  el.addEventListener('keydown',function(e){
+    if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();el.blur();}});
+  el.addEventListener('blur',function(){
+    parent.postMessage({ao3edit:1,kind:kind,idx:idx,value:el.textContent.trim(),done:1},'*');});}
+var b=document.querySelectorAll('.'+P+'-bub');
+for(var i=0;i<b.length;i++)bind(wrap(b[i]),'msg',i);
+bind(wrap(document.querySelector('.'+P+'-nm')),'name',-1);
+bind(wrap(document.querySelector('.'+P+'-on')),'status',-1);})();`;
+
+window.addEventListener('message',function(e){
+  const m=e.data; if(!m||!m.ao3edit) return;
+  if(m.kind==='msg'){
+    if(!st.msgs[m.idx]) return;
+    st.msgs[m.idx].text=m.value;
+    const ta=document.querySelector('#msgs textarea[data-i="'+m.idx+'"]');
+    if(ta) ta.value=m.value;
+  } else if(m.kind==='name'){ st.name=m.value; $('#cname').value=m.value; }
+  else if(m.kind==='status'){ st.status=m.value; $('#cstat').value=m.value; }
+  renderOut();              // outputs only — the frame already shows the edit
+  if(m.done) snapshot();    // one history entry per finished edit
+});
+
+function renderOut(){
+  const rawH=buildHtml(st), rawC=buildCss(st.skin,st.w,st.h);
+  const ch=cleanHtml(rawH), cc=cleanCss(rawC);
+  $('#o-html').textContent=rawH;
+  $('#o-css').textContent=formatCss(rawC);
+  const bad=[...cc.bad,...ch.bad];
+  $('#lint').innerHTML=bad.length?bad.map(b=>`<div class="lrow">${b}</div>`).join(''):'';
+  $('#lint').style.display=bad.length?'block':'none';
+  $('#vstat').textContent=bad.length?bad.length+' stripped':'clean';
+  $('#vstat').className='badge'+(bad.length?' red':'');
+  return {ch,cc};
+}
+function render(){
+  const r=renderOut();
+  $('#pv').srcdoc=`<!DOCTYPE html><html><head><meta charset="utf-8">
+    <style>${BASE}</style><style>${r.cc.css}</style><style>${EDIT_CSS}</style></head>
+    <body><div id="workskin"><div class="userstuff">${r.ch.html}</div></div>
+    <scr`+`ipt>${EDIT_JS}</scr`+`ipt></body></html>`;
+  snapshot();
+}
+$('#addm').onclick=()=>{st.msgs.push({from:'them',text:'new message',time:'9:43'});drawMsgs();render();};
+$('#sw').oninput=e=>{st.w=+e.target.value;$('#swv').textContent=st.w+'px';render();};
+$('#sh').oninput=e=>{st.h=+e.target.value;$('#shv').textContent=st.h+'px';render();};
+$('#cname').oninput=e=>{st.name=e.target.value;render();};
+$('#cstat').oninput=e=>{st.status=e.target.value;render();};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  t.classList.add('on');$('#p-'+t.dataset.p).classList.add('on');});
+const cp=(txt,btn)=>{navigator.clipboard.writeText(txt).then(()=>{
+  const o=btn.textContent;btn.textContent='Copied';setTimeout(()=>btn.textContent=o,1200);});};
+$('#cpH').onclick=e=>cp($('#o-html').textContent,e.target);
+$('#cpC').onclick=e=>cp($('#o-css').textContent,e.target);
+
+
+/* ---- undo / redo ----------------------------------------------------
+   Snapshots the whole document after each settled change. render() is
+   debounced, so a burst of typing collapses into one entry. ---------- */
+let hist=[],hi=-1,restoring=false;
+function snapshot(){
+  if(restoring) return;
+  const j=JSON.stringify(st);
+  if(hist[hi]===j) return;
+  hist=hist.slice(0,hi+1); hist.push(j); hi=hist.length-1;
+  if(hist.length>80){ hist.shift(); hi--; }
+  syncHist();
+}
+function syncHist(){ $('#undo').disabled=hi<=0; $('#redo').disabled=hi>=hist.length-1; }
+function restore(j){
+  restoring=true;
+  const o=JSON.parse(j); Object.keys(o).forEach(k=>st[k]=o[k]);
+  $('#cname').value=st.name; $('#cstat').value=st.status;
+  $('#sw').value=st.w; $('#swv').textContent=st.w+'px';
+  $('#sh').value=st.h; $('#shv').textContent=st.h+'px';
+  drawSkins(); drawMsgs(); render();
+  restoring=false; syncHist();
+}
+$('#undo').onclick=()=>{ if(hi>0){ hi--; restore(hist[hi]); } };
+$('#redo').onclick=()=>{ if(hi<hist.length-1){ hi++; restore(hist[hi]); } };
+window.addEventListener('keydown',e=>{
+  if(!(e.metaKey||e.ctrlKey)) return;
+  const k=e.key.toLowerCase();
+  if(k==='z'&&!e.shiftKey){ e.preventDefault(); $('#undo').click(); }
+  else if((k==='z'&&e.shiftKey)||k==='y'){ e.preventDefault(); $('#redo').click(); }
+});
+
+drawSkins();drawMsgs();render();
+</script>
+</body>
+</html>
