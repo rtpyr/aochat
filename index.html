@@ -70,8 +70,12 @@
   </div>
 </main>
 <section id="board">
-  <div class="bbar"><h2>Roadmap</h2><span class="sub">Where development stands.</span></div>
-  <div class="lanes" id="lanes"></div>
+  <div class="bhead">
+    <h2>Roadmap</h2>
+    <p>Where aochat development stands. Newest finished work is at the top of Done.</p>
+    <div class="chips" id="chips" role="group" aria-label="Jump to a column"></div>
+  </div>
+  <div class="lanes" id="lanes" tabindex="0" role="region" aria-label="Roadmap columns"></div>
 </section>
 
 <script src="app.js"></script>
