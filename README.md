@@ -1,4 +1,4 @@
-# ao3studio
+# aochat
 
 Builds chat-screenshot mockups that survive posting to **Archive of Our Own**.
 
