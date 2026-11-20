@@ -383,10 +383,10 @@ function drawMsgs(){
       <div class="top">
         <button class="side${m.from==='them'?' on':''}" data-i="${i}" data-s="them">Them</button>
         <button class="side${m.from==='me'?' on':''}" data-i="${i}" data-s="me">Me</button>
-        <input class="tm" data-i="${i}" value="${m.time}">
+        <input class="tm" data-i="${i}" value="${String(m.time).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">
         <button class="rm" data-i="${i}">&times;</button>
       </div>
-      <textarea data-i="${i}">${m.text.replace(/</g,'&lt;')}</textarea>
+      <textarea data-i="${i}">${m.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
     </div>`).join('');
   const box=$('#msgs');
   box.querySelectorAll('.side').forEach(b=>b.onclick=()=>{st.msgs[+b.dataset.i].from=b.dataset.s;drawMsgs();render();});
@@ -402,18 +402,18 @@ function drawMsgs(){
    unchanged. ---------------------------------------------------------- */
 const EDIT_CSS=`
 .ao3t{cursor:text;outline:none}
+.ao3t:empty{display:inline-block;min-width:1.5em;min-height:1em}
 .ao3t:hover{outline:1px dashed rgba(92,78,229,.35);outline-offset:2px;border-radius:4px}
 .ao3t:focus{outline:2px solid #5c4ee5;outline-offset:2px;border-radius:5px}
 `;
 const EDIT_JS=`(function(){var P=${JSON.stringify(PFX)};
 // Wrap only the message text so the focus ring hugs the words. Preview-only.
-function wrap(bub){if(!bub)return null;var kids=[],i,n;
+function wrap(bub){if(!bub)return null;var kids=[],i,n,stop=null;
   for(i=0;i<bub.childNodes.length;i++){n=bub.childNodes[i];
-    if(n.nodeType===1&&String(n.className).indexOf(P+'-time')>-1)break;
+    if(n.nodeType===1&&String(n.className).indexOf(P+'-time')>-1){stop=n;break;}
     kids.push(n);}
-  if(!kids.length)return null;
   var w=document.createElement('span');w.className='ao3t';
-  bub.insertBefore(w,kids[0]);
+  if(stop)bub.insertBefore(w,stop);else bub.appendChild(w);
   for(i=0;i<kids.length;i++)w.appendChild(kids[i]);
   return w;}
 // Editable from the start: the browser handles caret placement, double-click
@@ -441,7 +441,9 @@ window.addEventListener('message',function(e){
     if(ta) ta.value=m.value;
   } else if(m.kind==='name'){ st.name=m.value; $('#cname').value=m.value; }
   else if(m.kind==='status'){ st.status=m.value; $('#cstat').value=m.value; }
-  renderOut();              // outputs only — the frame already shows the edit
+  // A message edit is already visible in the frame, so outputs are enough.
+  // Name/status can also appear per row (KakaoTalk), so refresh once settled.
+  if(m.done&&m.kind!=='msg') render(); else renderOut();
   if(m.done) snapshot();    // one history entry per finished edit
 });
 
