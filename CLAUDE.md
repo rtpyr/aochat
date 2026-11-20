@@ -43,3 +43,9 @@ JS cleaner over the same CSS and fails if they differ. It needs otwarchive's
 `lib/css_cleaner.rb` + `config/config.yml` (`OTW_DIR`) and the `css_parser`
 3.2.0 gem. After any change to the cleaner, `PROPS`/`SHORT`, or the skin CSS,
 run it. GitHub Actions runs it on every push and weekly.
+
+## Cache busting
+Run `sh tools/bump.sh` after any change to `style.css` or `app.js`, before
+committing. It stamps `index.html` with a hash of both so browsers can't run a
+cached `app.js` against a newer page (that blanked the whole app once). CI fails
+if the stamp is stale.
