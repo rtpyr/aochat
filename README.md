@@ -6,7 +6,7 @@
 > [!WARNING]
 > **This project is still a work in progress: please do not use it yet.**
 > Bugs are still being fixed and features are not complete.
-> HTML and CSS, the skins, features and the entire website's user interface (UI/UX) are subject to change without notice. 
+> HTML/CSS, features and the entire website's user interface (UI/UX) are subject to change without notice. 
 
 Easily create chat-style screenshots for [Archive of Our Own (AO3)](https://archiveofourown.org/)
 
