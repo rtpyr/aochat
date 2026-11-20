@@ -1,0 +1,20 @@
+/* Declarations chosen to probe the edges of AO3's CSS cleaner. */
+.t1{gap:6px;margin:0;border-radius:8px;flex-direction:column;display:flex}
+.t2{background:url(data:image/png;base64,AAAA)}
+.t3{background:url(https://example.com/a.png);color:#fff}
+.t4{width:url(https://example.com/a.png)}
+.t5{background:url(https://example.com/a.svg)}
+.t6{width:calc(100% - 4px);height:10px}
+.t7{transform:rotate(10deg);-webkit-transform:rotate(10deg)}
+.t8{font-family:Arial,"Segoe UI",sans-serif;font-size:12px}
+.t9{background:linear-gradient(#fff,#000)}
+.t10{box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.t11{color:var(--x);margin:-1px}
+.t12{content:"\2713";overflow-wrap:anywhere}
+.t13{position:fixed;z-index:9999}
+.t14{color:notacolor;width:banana}
+.t15{margin:0 auto!important}
+.t16{max-width:72em;min-height:200px;line-height:1.4}
+.t17{display:inline-block;float:left;text-align:right}
+@font-face{font-family:x;src:url(https://example.com/x.woff)}
+.t18{--custom:1px;width:5px}

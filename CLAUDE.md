@@ -34,3 +34,10 @@ Don't assert that a change works — check it. Parse both scripts, re-run the
 allowlist check on the generated CSS, and confirm no editor artifacts leak
 into the export. Visual bugs need a screenshot; reasoning about what *should*
 render has produced wrong answers here more than once.
+
+## Checking against AO3's real code
+`tools/ao3check/compare.mjs` runs AO3's own Ruby `css_cleaner.rb` and the page's
+JS cleaner over the same CSS and fails if they differ. It needs otwarchive's
+`lib/css_cleaner.rb` + `config/config.yml` (`OTW_DIR`) and the `css_parser`
+3.2.0 gem. After any change to the cleaner, `PROPS`/`SHORT`, or the skin CSS,
+run it. GitHub Actions runs it on every push and weekly.

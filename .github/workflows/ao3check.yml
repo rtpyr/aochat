@@ -1,0 +1,34 @@
+name: AO3 cleaner check
+
+# Runs AO3's real CSS cleaner (otwcode/otwarchive lib/css_cleaner.rb) against the
+# page's JavaScript port and fails if they disagree. The weekly run catches
+# changes on AO3's side.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: otwcode/otwarchive
+          path: otw
+          sparse-checkout: |
+            lib/css_cleaner.rb
+            config/config.yml
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - run: gem install css_parser -v 3.2.0 --no-document
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/ao3check/compare.mjs
+        env:
+          OTW_DIR: otw
