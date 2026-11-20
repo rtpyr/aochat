@@ -1,5 +1,12 @@
 # aochat
 
+![Status](https://img.shields.io/badge/status-work%20in%20progress-red)
+
+> [!WARNING]
+> **This project is still a work in progress.** The generated HTML and CSS,
+> the skins and the class names may all change without notice. Don't rely on
+> a skin staying stable yet — keep a copy of anything you've already posted.
+
 Builds chat-screenshot mockups that survive posting to **Archive of Our Own**.
 
 AO3 strips most of what a normal UI mockup is made of, so the output here is
