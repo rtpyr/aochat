@@ -7,7 +7,7 @@
 > Bugs are still being fixed and features are not complete. The generated
 > HTML and CSS, the skins and the class names may all change without notice.
 
-Builds chat-screenshot that survive posting (easily) to Archive of Our Own https://archiveofourown.org/
+Builds chat-screenshot (easily) that survive posting to Archive of Our Own https://archiveofourown.org/
 
 ---
 
