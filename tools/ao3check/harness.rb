@@ -7,7 +7,7 @@ Encoding.default_external = Encoding::UTF_8
 require 'yaml'
 require 'ostruct'
 require 'json'
-otw = ENV.fetch('OTW_DIR')
+otw = File.expand_path(ENV.fetch('OTW_DIR'))
 if (libs = ENV['LIBS_DIR'])
   Dir[File.join(libs, '*', 'lib')].each { |d| $LOAD_PATH.unshift(d) }
 end
