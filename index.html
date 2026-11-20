@@ -75,6 +75,34 @@
  .switch[aria-checked=true] .trk{background:var(--accent)}
  .switch[aria-checked=true] .trk::after{transform:translateX(13px)}
  .switch:focus-visible .trk{outline:2px solid var(--accent);outline-offset:2px}
+ .nav{display:flex;gap:2px;margin-left:8px}
+ .navb{font:inherit;font-size:12px;padding:5px 10px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:6px}
+ .navb:hover{color:var(--ink)}
+ .navb.on{background:var(--accent-bg);color:var(--ink);font-weight:600}
+ body[data-view=board] main{display:none}
+ #board{display:none;flex:1;min-height:0;flex-direction:column}
+ body[data-view=board] #board{display:flex}
+ .bbar{display:flex;align-items:center;gap:10px;padding:10px 14px 0}
+ .bbar h2{margin:0;font-size:13px;font-weight:600}
+ .bbar .sub{flex:1}
+ .bbar button{font:inherit;font-size:11.5px;padding:4px 9px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--muted);cursor:pointer}
+ .bbar button:hover{border-color:var(--accent);color:var(--ink)}
+ .lanes{flex:1;display:flex;gap:12px;padding:12px 14px 14px;min-height:0;overflow-x:auto}
+ .lane{flex:1 0 230px;max-width:340px;display:flex;flex-direction:column;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:9px}
+ .lane.over{border-color:var(--accent);background:var(--accent-bg)}
+ .lane h3{margin:0;padding:10px 12px;font-size:11.5px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+ .lane h3 span{font-weight:500}
+ .cards{flex:1;overflow-y:auto;padding:0 8px 8px;min-height:40px}
+ .card{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:8px 9px;margin-bottom:7px;cursor:grab}
+ .card.drag{opacity:.4}
+ .card .t{font-size:12.5px;font-weight:600;line-height:1.35}
+ .card .d{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:3px}
+ .card .m{display:flex;align-items:center;gap:6px;margin-top:7px}
+ .card .tag{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--badge-bg);color:var(--muted)}
+ .card .mv{margin-left:auto;display:flex;gap:3px}
+ .card .mv button{width:22px;height:20px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--muted);cursor:pointer;font:inherit;font-size:11px;line-height:1;padding:0}
+ .card .mv button:hover:not(:disabled){border-color:var(--accent);color:var(--ink)}
+ .card .mv button:disabled{opacity:.3;cursor:default}
  .note{font-size:11px;color:var(--muted);line-height:1.45;margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
 </style>
 <script>
@@ -87,6 +115,10 @@
 <body>
 <header>
   <h1>aochat</h1>
+  <nav class="nav">
+    <button class="navb on" data-view="studio">Studio</button>
+    <button class="navb" data-view="board">Roadmap</button>
+  </nav>
   <span style="flex:1"></span>
   <button class="switch" id="theme" role="switch" aria-checked="false" aria-label="Dark mode" title="Dark mode"><span class="trk"></span></button>
 </header>
@@ -137,6 +169,10 @@
     </div>
   </div>
 </main>
+<section id="board">
+  <div class="bbar"><h2>Roadmap</h2><span class="sub">Drag cards between columns, or use the arrows. Saved in this browser only.</span><button id="breset">Reset</button></div>
+  <div class="lanes" id="lanes"></div>
+</section>
 
 <script>
 /* ===================================================================
@@ -527,11 +563,81 @@ $('#theme').setAttribute('aria-checked',String(document.documentElement.getAttri
 $('#undo').onclick=()=>{ if(hi>0){ hi--; restore(hist[hi]); } };
 $('#redo').onclick=()=>{ if(hi<hist.length-1){ hi++; restore(hist[hi]); } };
 window.addEventListener('keydown',e=>{
-  if(!(e.metaKey||e.ctrlKey)) return;
+  if(!(e.metaKey||e.ctrlKey)||document.body.dataset.view==='board') return;
   const k=e.key.toLowerCase();
   if(k==='z'&&!e.shiftKey){ e.preventDefault(); $('#undo').click(); }
   else if((k==='z'&&e.shiftKey)||k==='y'){ e.preventDefault(); $('#redo').click(); }
 });
+
+/* ---- views + roadmap board (site chrome only; never part of the export) ---- */
+const COLS=[['todo','Backlog'],['doing','In progress'],['test','Needs testing'],['done','Done']];
+const CARDS=[
+ ['AO3 sanitizer and CSS-cleaner rules ported from otwarchive','Real allowlists for elements, attributes, properties and shorthands.','AO3','done'],
+ ['AO3-safe markup','Only div, span and p with class. No id, style, svg or data-URIs.','AO3','done'],
+ ['Live preview in a sandboxed frame','Shows what AO3 keeps, with the editor layer kept out of the export.','Preview','done'],
+ ['WhatsApp and iMessage skins','','Skin','done'],
+ ['KakaoTalk skin','Colours and sizes measured from a Figma community file.','Skin','done'],
+ ['Click-to-edit on the preview','Text edits straight on the phone, with undo and redo.','Editor','done'],
+ ['Copy HTML and CSS, with a CSS formatter','','Export','done'],
+ ['Stripped-declaration warnings','Lists anything the AO3 rules would drop.','AO3','done'],
+ ['GitHub repo and Pages','','Infra','done'],
+ ['Dark mode for the site','The phone preview stays as AO3 would show it.','UI','done'],
+ ['Roadmap board','','UI','done'],
+ ['Match AO3 base stylesheet and page wrapper','Port the wrapper chain and the workskin font size from the live site.','AO3','doing'],
+ ['Fuller property-value validation','Value checks are only partly ported so far.','AO3','doing'],
+ ['KakaoTalk skin visual check','Compare side by side with the Figma original.','Skin','test'],
+ ['Very long chats and many messages','','Preview','test'],
+ ['Narrow and mobile widths','','UI','test'],
+ ['AO3 dark site skins','Check the output against AO3 site skins that are not the default.','AO3','test'],
+ ['LINE skin from real measurements','Current colours are guesses.','Skin','todo'],
+ ['App icons as hosted PNG sprites','SVG is removed by AO3, so icons need hosted images.','Export','todo'],
+ ['Automated checks on every push','Run the AO3-safety checks in CI.','Infra','todo'],
+ ['More skins','','Skin','todo']
+].map((c,i)=>({id:'c'+i,t:c[0],d:c[1],tag:c[2],col:c[3]}));
+const BKEY='aochat-board';
+let board=CARDS.map(c=>({...c}));
+try{ const sv=JSON.parse(localStorage.getItem(BKEY)||'null');
+  if(sv) board.forEach(c=>{ if(sv[c.id]&&COLS.some(k=>k[0]===sv[c.id])) c.col=sv[c.id]; }); }catch(e){}
+function saveBoard(){ try{ const o={}; board.forEach(c=>o[c.id]=c.col); localStorage.setItem(BKEY,JSON.stringify(o)); }catch(e){} }
+function moveCard(id,col){ const c=board.find(x=>x.id===id); if(c&&c.col!==col){ c.col=col; saveBoard(); drawBoard(); } }
+function el(tag,cls,text){ const n=document.createElement(tag); if(cls) n.className=cls; if(text) n.textContent=text; return n; }
+function drawBoard(){
+  const lanes=$('#lanes'); lanes.textContent='';
+  COLS.forEach(([key,name],ci)=>{
+    const items=board.filter(c=>c.col===key);
+    const lane=el('div','lane'); const h=el('h3',null,name); h.appendChild(el('span',null,String(items.length)));
+    const wrap=el('div','cards');
+    lane.append(h,wrap);
+    lane.addEventListener('dragover',e=>{ e.preventDefault(); lane.classList.add('over'); });
+    lane.addEventListener('dragleave',e=>{ if(!lane.contains(e.relatedTarget)) lane.classList.remove('over'); });
+    lane.addEventListener('drop',e=>{ e.preventDefault(); lane.classList.remove('over'); moveCard(e.dataTransfer.getData('text/plain'),key); });
+    items.forEach(c=>{
+      const card=el('div','card'); card.draggable=true;
+      card.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain',c.id); card.classList.add('drag'); });
+      card.addEventListener('dragend',()=>card.classList.remove('drag'));
+      card.appendChild(el('div','t',c.t));
+      if(c.d) card.appendChild(el('div','d',c.d));
+      const m=el('div','m'); m.appendChild(el('span','tag',c.tag));
+      const mv=el('div','mv');
+      const L=el('button',null,'‹'), R=el('button',null,'›');
+      L.title='Move left'; R.title='Move right';
+      L.setAttribute('aria-label','Move to '+(COLS[ci-1]||[,''])[1]); R.setAttribute('aria-label','Move to '+(COLS[ci+1]||[,''])[1]);
+      L.disabled=ci===0; R.disabled=ci===COLS.length-1;
+      L.onclick=()=>moveCard(c.id,COLS[ci-1][0]); R.onclick=()=>moveCard(c.id,COLS[ci+1][0]);
+      mv.append(L,R); m.appendChild(mv); card.appendChild(m); wrap.appendChild(card);
+    });
+    lanes.appendChild(lane);
+  });
+}
+$('#breset').onclick=()=>{ board=CARDS.map(c=>({...c})); saveBoard(); drawBoard(); };
+function setView(v){
+  document.body.dataset.view=v;
+  document.querySelectorAll('.navb').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  if(location.hash!==(v==='board'?'#roadmap':'')) history.replaceState(null,'',v==='board'?'#roadmap':location.pathname+location.search);
+}
+document.querySelectorAll('.navb').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+drawBoard();
+setView(location.hash==='#roadmap'?'board':'studio');
 
 drawSkins();drawMsgs();render();
 </script>
