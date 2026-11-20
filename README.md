@@ -8,3 +8,10 @@
 > HTML and CSS, the skins and the class names may all change without notice.
 
 Builds chat-screenshot that survive posting to Archive of Our Own.
+
+---
+
+An independent fan project. Not affiliated with, endorsed by, or connected to
+the Organization for Transformative Works (OTW), Archive of Our Own, or any of
+the messaging apps whose layouts the skins resemble. All names and trademarks
+belong to their respective owners.
