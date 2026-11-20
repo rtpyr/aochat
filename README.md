@@ -9,6 +9,8 @@
 
 Builds chat-screenshot (easily) that survive posting to Archive of Our Own https://archiveofourown.org/
 
+**📌 [View the Development Roadmap](https://github.com/users/rtpyr/projects/1)**
+
 ---
 
 An independent fan project. Not affiliated with, endorsed by, or connected to
