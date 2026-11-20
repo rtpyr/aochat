@@ -5,8 +5,10 @@ After **every** change, commit and push to `main`. Don't batch changes or wait
 to be asked. A change that only exists in a preview is not done.
 
 ## What this repo is
-`index.html` — a self-contained page, no build step, no dependencies. It
-generates chat mockups that survive posting to Archive of Our Own.
+`index.html` + `style.css` + `app.js` — a static page, no build step, no
+dependencies, plain relative links so it works on GitHub Pages and from
+`file://`. It generates chat mockups that survive posting to Archive of Our Own.
+The AO3 rules, skins and generators are all in `app.js`.
 
 ## Invariants — do not break these
 The generated HTML and CSS must survive AO3's sanitizer and CSS cleaner.
@@ -30,7 +32,7 @@ Before any push, confirm the generator still emits:
   `1.286em` margins. Rows are emitted as `<p>` with `margin: 0` on purpose.
 
 ## Verifying
-Don't assert that a change works — check it. Parse both scripts, re-run the
+Don't assert that a change works — check it. Parse `app.js` and the small inline script in `index.html`, re-run the
 allowlist check on the generated CSS, and confirm no editor artifacts leak
 into the export. Visual bugs need a screenshot; reasoning about what *should*
 render has produced wrong answers here more than once.

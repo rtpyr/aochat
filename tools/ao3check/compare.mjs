@@ -6,9 +6,9 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const html = fs.readFileSync(path.join(here, '../../index.html'), 'utf8');
+const html = fs.readFileSync(path.join(here, '../../app.js'), 'utf8');
 const a = html.indexOf('const PROPS='), b = html.indexOf('function buildHtml');
-if (a < 0 || b < 0) throw new Error('could not find the cleaner in index.html');
+if (a < 0 || b < 0) throw new Error('could not find the cleaner in app.js');
 const api = new Function(html.slice(a, b) + '\nreturn {cleanCss,buildCss,SKINS};')();
 
 const inputs = Object.keys(api.SKINS).map(k => [`skin:${k}`, api.buildCss(k, 300, 360)]);
