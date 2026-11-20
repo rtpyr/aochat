@@ -7,19 +7,26 @@
 <style>
  :root{color-scheme:light;--bg:#f4f4f2;--panel:#fff;--ink:#1d1d1f;--muted:#6b6b70;--line:#e3e3e0;
    --accent:#7a7d84;--warn:#b4451f;--ok:#2e7d32;
+   --field:#fff;--card:#fcfcfb;--code:#fbfbfa;--accent-bg:#f5f5f4;--badge-bg:#efefed;
+   --badge-red:#fdeee9;--faint:#f3f3f1;--thumb:#c6c6c1;--thumb-hover:#a9a9a3;--on-accent:#fff;
    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
  /* one scrollbar style everywhere in the studio. The preview frame is
     deliberately left alone so it keeps rendering the way AO3 would. */
- *{scrollbar-width:thin;scrollbar-color:#c6c6c1 transparent}
+ *{scrollbar-width:thin;scrollbar-color:var(--thumb) transparent}
  ::-webkit-scrollbar{width:10px;height:10px}
  ::-webkit-scrollbar-track{background:transparent}
- ::-webkit-scrollbar-thumb{background:#c6c6c1;border-radius:8px;
+ ::-webkit-scrollbar-thumb{background:var(--thumb);border-radius:8px;
    border:2px solid var(--panel);background-clip:padding-box}
- ::-webkit-scrollbar-thumb:hover{background:#a9a9a3;background-clip:padding-box}
+ ::-webkit-scrollbar-thumb:hover{background:var(--thumb-hover);background-clip:padding-box}
  ::-webkit-scrollbar-corner{background:transparent}
  ::-webkit-scrollbar-button{display:none;width:0;height:0}
+ [data-theme=dark]{color-scheme:dark;--bg:#161618;--panel:#1e1e21;--ink:#e8e8ea;--muted:#9a9aa1;--line:#34343a;
+   --accent:#a3a6ad;--warn:#ef8a66;--ok:#6fbf73;
+   --field:#26262a;--card:#222226;--code:#19191b;--accent-bg:#2c2c31;--badge-bg:#2c2c31;
+   --badge-red:#3a2620;--faint:#2a2a2e;--thumb:#4a4a50;--thumb-hover:#64646b;--on-accent:#1e1e21}
  *{box-sizing:border-box}html,body{margin:0;height:100%}
+ input[type=range]{accent-color:var(--accent)}
  body{font-family:var(--sans);background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100vh;overflow:hidden;font-size:13px}
  header{padding:9px 14px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;align-items:center;gap:10px;flex:0 0 auto}
  header h1{font-size:14px;margin:0;font-weight:600}
@@ -31,46 +38,59 @@
  #mid{flex:1}
  #out{flex:0 0 340px}
  label.f{display:block;font-size:11px;color:var(--muted);margin:10px 0 3px;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
- input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff;color:var(--ink)}
+ input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:var(--field);color:var(--ink)}
  .skins{display:flex;gap:6px;flex-wrap:wrap}
- .skin{flex:1;padding:7px 4px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px;text-align:center}
- .skin.on{border-color:var(--accent);background:#f5f5f4;color:var(--accent);font-weight:600}
- .msg{border:1px solid var(--line);border-radius:7px;padding:7px;margin-bottom:6px;background:#fcfcfb}
+ .skin{flex:1;padding:7px 4px;border:1px solid var(--line);border-radius:7px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px;text-align:center}
+ .skin.on{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);font-weight:600}
+ .msg{border:1px solid var(--line);border-radius:7px;padding:7px;margin-bottom:6px;background:var(--card)}
  .msg .top{display:flex;gap:5px;align-items:center;margin-bottom:5px}
- .msg .side{flex:1;padding:3px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);cursor:pointer;font:inherit;font-size:11px}
- .msg .side.on{background:var(--accent);color:#fff;border-color:var(--accent)}
- .msg textarea{width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;background:#fff;color:var(--ink);font:inherit;font-size:12px;resize:vertical;min-height:34px}
+ .msg .side{flex:1;padding:3px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11px}
+ .msg .side.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+ .msg textarea{width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;background:var(--field);color:var(--ink);font:inherit;font-size:12px;resize:vertical;min-height:34px}
  .msg .rm{border:none;background:none;color:var(--warn);cursor:pointer;font-size:14px;padding:0 4px}
- .msg .tm{width:62px;padding:3px 5px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);font:inherit;font-size:11px}
- button.add{width:100%;padding:7px;border:1px dashed var(--line);border-radius:7px;background:#fff;color:var(--accent);cursor:pointer;font:inherit;font-weight:600}
+ .msg .tm{width:62px;padding:3px 5px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);font:inherit;font-size:11px}
+ button.add{width:100%;padding:7px;border:1px dashed var(--line);border-radius:7px;background:var(--field);color:var(--accent);cursor:pointer;font:inherit;font-weight:600}
  .head{padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex:0 0 auto}
  iframe{flex:1;width:100%;border:none;background:#fff;min-height:0}
  .tabs{display:flex;gap:2px;padding:6px 8px 0;background:var(--panel);border-bottom:1px solid var(--line);flex:0 0 auto}
  .tab{font:inherit;font-size:11.5px;padding:5px 10px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:6px 6px 0 0}
  .skin:hover,.copy button:hover{border-color:var(--accent)}
  .tab.on{color:var(--accent);background:var(--bg);font-weight:600}
- pre{flex:1;margin:0;overflow:auto;padding:10px;font-family:var(--mono);font-size:11px;line-height:1.45;background:#fbfbfa;white-space:pre-wrap;word-break:break-word}
+ pre{flex:1;margin:0;overflow:auto;padding:10px;font-family:var(--mono);font-size:11px;line-height:1.45;background:var(--code);white-space:pre-wrap;word-break:break-word}
  .pane{display:none;flex:1;flex-direction:column;min-height:0}
  .pane.on{display:flex}
  .copy{padding:6px 10px;border-top:1px solid var(--line);background:var(--panel);display:flex;gap:6px}
- .copy button{flex:1;padding:6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px}
+ .copy button{flex:1;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px}
  .copy button:hover{border-color:var(--accent);color:var(--accent)}
  .lint{flex:0 0 auto;max-height:130px;overflow:auto;border-top:1px solid var(--line);background:var(--panel);font-family:var(--mono);font-size:11px}
- .lrow{padding:3px 10px;border-bottom:1px solid #f3f3f1;color:var(--warn)}
+ .lrow{padding:3px 10px;border-bottom:1px solid var(--faint);color:var(--warn)}
  .lrow.ok{color:var(--ok);font-family:var(--sans);padding:7px 10px}
- .hbtn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;
+ .hbtn{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:6px;
    width:27px;height:24px;cursor:pointer;font:inherit;font-size:13px;line-height:1;padding:0;margin-left:4px}
  .hbtn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
  .hbtn:disabled{opacity:.3;cursor:default}
- .badge{font-size:10.5px;padding:1px 7px;border-radius:10px;background:#efefed;color:var(--accent)}
- .badge.red{background:#fdeee9;color:var(--warn)}
+ .badge{font-size:10.5px;padding:1px 7px;border-radius:10px;background:var(--badge-bg);color:var(--accent)}
+ .badge.red{background:var(--badge-red);color:var(--warn)}
+ .switch{display:flex;align-items:center;gap:7px;border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:11.5px;color:var(--muted)}
+ .switch .trk{position:relative;width:30px;height:17px;border-radius:9px;background:var(--thumb);transition:background .15s}
+ .switch .trk::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--panel);transition:transform .15s}
+ .switch[aria-checked=true] .trk{background:var(--accent)}
+ .switch[aria-checked=true] .trk::after{transform:translateX(13px)}
+ .switch:focus-visible .trk{outline:2px solid var(--accent);outline-offset:2px}
  .note{font-size:11px;color:var(--muted);line-height:1.45;margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
 </style>
+<script>
+/* site theme only; the phone preview is never themed */
+(function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
+ if(!t)t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+ document.documentElement.setAttribute('data-theme',t)})();
+</script>
 </head>
 <body>
 <header>
   <h1>aochat</h1>
   <span style="flex:1"></span>
+  <button class="switch" id="theme" role="switch" aria-checked="false" aria-label="Dark mode" title="Dark mode"><span class="trk"></span>Dark</button>
   <span class="badge" id="vstat">clean</span>
 </header>
 <main>
@@ -504,6 +524,11 @@ function restore(j){
   drawSkins(); drawMsgs(); render();
   restoring=false; syncHist();
 }
+function setTheme(t){ document.documentElement.setAttribute('data-theme',t);
+  $('#theme').setAttribute('aria-checked',String(t==='dark'));
+  try{ localStorage.setItem('aochat-theme',t); }catch(e){} }
+$('#theme').onclick=()=>setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+$('#theme').setAttribute('aria-checked',String(document.documentElement.getAttribute('data-theme')==='dark'));
 $('#undo').onclick=()=>{ if(hi>0){ hi--; restore(hist[hi]); } };
 $('#redo').onclick=()=>{ if(hi<hist.length-1){ hi++; restore(hist[hi]); } };
 window.addEventListener('keydown',e=>{
