@@ -915,9 +915,10 @@ const menu=$('#pmenu'),mbtn=$('#pbtn');
 function closeMenu(){ menu.hidden=true; mbtn.setAttribute('aria-expanded','false'); }
 mbtn.onclick=e=>{ e.stopPropagation();
   if(!menu.hidden){ closeMenu(); return; }
+  menu.hidden=false;                                   // show first so its width can be measured
   const r=mbtn.getBoundingClientRect(); menu.style.top=(r.bottom+window.scrollY+6)+'px';
   menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+'px';
-  menu.hidden=false; mbtn.setAttribute('aria-expanded','true'); menu.querySelector('button').focus(); };
+  mbtn.setAttribute('aria-expanded','true'); menu.querySelector('button').focus(); };
 document.addEventListener('click',e=>{ if(!menu.hidden&&!menu.contains(e.target)) closeMenu(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!menu.hidden){ closeMenu(); mbtn.focus(); } });
 function act(b){
@@ -934,6 +935,13 @@ $('#nok').onclick=()=>{ $('#notice').hidden=true; AoStore.setMeta('noticeDismiss
 $('#nexp').onclick=()=>exportCurrent();
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') flush(); });
 addEventListener('pagehide',()=>{ flush(); });
+
+/* ---- phone layout: one pane at a time, switched from the bottom bar ---- */
+document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
+  document.body.dataset.view=b.dataset.v;
+  document.querySelectorAll('#mtabs button').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); });
+  closeMenu(); closeWho(); closeTime();
+});
 
 /* ---- start up ---- */
 (async function init(){

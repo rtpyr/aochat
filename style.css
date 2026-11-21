@@ -182,3 +182,65 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .cmd:disabled{opacity:.35;cursor:default}
 .cmd.danger svg{color:var(--warn)}
 .cmd .ech{display:inline-block;width:5px;height:5px;margin-left:3px;border-right:1.4px solid currentColor;border-bottom:1.4px solid currentColor;transform:rotate(45deg) translate(-1px,-1px)}
+
+/* ---- phones and small tablets ---- */
+#mtabs{display:none}
+@media (max-width:900px){
+  body{height:100vh;height:100dvh}
+  header{padding:6px 10px;gap:6px 8px}
+  header>span[style]{display:none}
+  header h1{order:1}
+  .proj{order:2;flex:1 1 0;min-width:0;max-width:none;font-size:16px;padding:7px 8px}
+  .savest{order:3;min-width:0}
+  #savetx{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #theme{order:4}
+  .hact{order:5;flex:0 0 100%;flex-wrap:nowrap;overflow-x:auto;gap:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .hact::-webkit-scrollbar{display:none}
+  .cmd{flex:0 0 auto;min-width:60px;min-height:46px}
+  main{position:relative}
+  .col{border-right:none}
+  #build,#mid,#out{display:none;flex:1 1 auto;width:100%;max-width:none}
+  body[data-view=edit] #build{display:flex}
+  body[data-view=preview] #mid{display:flex}
+  body[data-view=code] #out{display:flex}
+  #mtabs{display:flex;flex:0 0 auto;border-top:1px solid var(--line);background:var(--panel);padding-bottom:env(safe-area-inset-bottom)}
+  #mtabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px 6px;border:0;background:none;color:var(--muted);font:inherit;font-size:11.5px;cursor:pointer}
+  #mtabs button.on{color:var(--accent);font-weight:600;background:var(--accent-bg)}
+  /* bigger touch targets; 16px text so iOS does not zoom the page on focus */
+  input[type=text],select,textarea{font-size:16px}
+  .skin{padding:11px 4px;font-size:13px}
+  .msg .who,.msg .tm{min-height:38px;font-size:14px}
+  .msg .tm{width:92px}
+  .msg .rm{flex:0 0 28px;width:28px;height:28px}
+  .mvbox{flex:0 0 36px}
+  .mvbox .mv{min-height:30px}
+  .mvbox .grip{display:none}
+  .add{padding:12px}
+  .head .hbtn,.zoom button{min-height:36px}
+  .head .hbtn{width:36px;height:36px}
+  .head>span:first-child{display:none}
+  .tabs button{padding:9px 14px}
+  .copy button{padding:11px}
+  /* date and time picker becomes a sheet from the bottom */
+  .tpop{position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0;width:100%;max-height:88vh;max-height:88dvh;overflow:auto;border-radius:14px 14px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));z-index:40}
+  .tpop .trow{flex-wrap:wrap}
+  .tseg{flex:1 1 auto;font-size:15px;padding:9px 10px}
+  .tpop .trow>button{min-height:40px;min-width:44px;justify-content:center}
+  .cal{flex-wrap:wrap}
+  .cdate{flex:1 1 190px;width:auto;min-width:0}
+  .cal .cn{width:36px;height:32px;padding:0}
+  .cd{height:35px}
+  .ctime{height:290px;flex:0 0 auto}
+  .ti{height:34px;min-width:30px}
+  .tc{padding-right:0}
+  .tc::-webkit-scrollbar{width:6px}
+  .ctime{gap:2px}
+  .pmenu button{padding:11px 12px;font-size:14px}
+  .tpop .cal button{padding:0;font-size:13px}
+  .tpop .cal .ctoday{padding:5px 12px!important}
+  .cwk,.cgrid{grid-template-columns:repeat(7,minmax(0,1fr))}
+  dialog{max-width:420px}
+  .dact button{padding:9px 16px}
+  .notice{padding:8px 10px}
+}
+@media (pointer:coarse){ .mvbox .grip{display:none} }
