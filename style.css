@@ -277,8 +277,8 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .sgrab{display:none}
 @media (max-width:900px) and (orientation:portrait){
   main{padding-bottom:var(--sheet-h,48px)}
-  main.snap{transition:padding-bottom .28s cubic-bezier(.22,.8,.3,1)}
-  main.snap #build{transition:height .28s cubic-bezier(.22,.8,.3,1)}
+  main.snap{transition:padding-bottom .46s cubic-bezier(.32,.72,0,1)}
+  main.snap #build{transition:height .46s cubic-bezier(.32,.72,0,1)}
   body[data-view=code] main{padding-bottom:0}
   body[data-view=edit] #mid{display:flex}
   body[data-view=edit] #build{display:flex;position:absolute;left:0;right:0;bottom:0;width:auto;height:var(--sheet-h,48px);flex:none;box-sizing:border-box;z-index:15;border-top:1px solid var(--line);border-right:none;border-radius:14px 14px 0 0}
@@ -286,7 +286,10 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   body[data-sheet=min] #build{overflow:hidden}
   body[data-sheet=min] #build>:not(.sgrab){visibility:hidden}
   .sgrab{display:flex;justify-content:center;align-items:center;position:sticky;top:-12px;height:48px;flex:0 0 48px;margin:-12px -12px 0;background:var(--panel);z-index:2;cursor:grab;touch-action:none;border-radius:14px 14px 0 0}
-  .sgrab span{width:56px;height:6px;border-radius:3px;background:var(--thumb-hover)}
+  .sgrab span{width:56px;height:6px;border-radius:3px;background:var(--thumb-hover);transition:width .2s ease,background-color .2s ease}
+  .sgrab:active span,.dragging .sgrab span{width:68px;background:var(--accent)}
+  .dragging #build{will-change:height}
+  .dragging,.dragging *{user-select:none;-webkit-user-select:none}
   .sgrab:hover span,.sgrab:focus-visible span{background:var(--accent)}
   .sgrab:focus-visible{outline:none}
   #msgs{padding-bottom:16px}

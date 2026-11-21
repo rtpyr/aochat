@@ -968,6 +968,7 @@ function paintTabs(){
   document.querySelectorAll('#mtabs button').forEach(x=>{ const on=x.dataset.v===cur; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); });
 }
 function setSheet(name,px,animate){
+  if(animate&&name!==sheet&&navigator.vibrate) try{ navigator.vibrate(8); }catch(e){}
   sheet=name; document.body.dataset.sheet=name;
   mainEl.classList.toggle('snap',!!animate);
   mainEl.style.setProperty('--sheet-h',(px==null?sheetPx()[name]:px)+'px');
@@ -989,14 +990,21 @@ document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
 // when pulling up on a partly open sheet, or pulling down from the top of the list.
 const D={sy:0,sh:0,moved:false,last:[]};
 const build=$('#build');
-function dStart(y,t){ D.sy=y; D.sh=build.offsetHeight; D.moved=false; D.last=[[t,y]]; mainEl.classList.remove('snap'); }
+let dRaf=0, dY=0, dT=0;
+function dStart(y,t){ D.sy=y; D.sh=build.offsetHeight; D.moved=false; D.last=[[t,y]]; mainEl.classList.remove('snap'); mainEl.classList.add('dragging'); }
+function dApply(){ dRaf=0;
+  const p=sheetPx(), raw=D.sh-(dY-D.sy);
+  // stops at the collapsed height; past full height it stretches with resistance, like iOS
+  const h=raw>p.full ? p.full+Math.min(44,(raw-p.full)*.3) : Math.max(p.min,raw);
+  mainEl.style.setProperty('--sheet-h',h+'px'); }
 function dMove(y,t){ if(Math.abs(y-D.sy)>3) D.moved=true; if(!D.moved) return;
-  const p=sheetPx(); const h=Math.min(p.full,Math.max(p.min,D.sh-(y-D.sy)));
-  mainEl.style.setProperty('--sheet-h',h+'px'); D.last.push([t,y]); if(D.last.length>6) D.last.shift(); }
-function dEnd(){ if(!D.moved) return false;
-  const p=sheetPx(), h=build.offsetHeight; let v=0;                       // px/ms, negative = up
+  dY=y; dT=t; D.last.push([t,y]); if(D.last.length>6) D.last.shift();
+  if(!dRaf) dRaf=requestAnimationFrame(dApply); }
+function dEnd(){ mainEl.classList.remove('dragging'); if(!D.moved) return false;
+  if(dRaf){ cancelAnimationFrame(dRaf); dApply(); }
+  const p=sheetPx(), h=Math.min(p.full,build.offsetHeight); let v=0;       // px/ms, negative = up
   if(D.last.length>1){ const a=D.last[0],b=D.last[D.last.length-1]; v=(b[1]-a[1])/Math.max(1,b[0]-a[0]); }
-  const want=h-v*220;                                                      // where it was heading
+  const want=h-v*260;                                                      // where it was heading
   const name=['min','half','full'].reduce((best,k)=>Math.abs(p[k]-want)<Math.abs(p[best]-want)?k:best,'half');
   document.body.dataset.view='edit'; setSheet(name,null,true); return true; }
 (function(){
