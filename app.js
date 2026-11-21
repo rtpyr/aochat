@@ -365,6 +365,8 @@ function drawMsgs(){
       <div class="top">
         <button class="side${m.from==='them'?' on':''}" data-i="${i}" data-s="them">Them</button>
         <button class="side${m.from==='me'?' on':''}" data-i="${i}" data-s="me">Me</button>
+        <button class="mv" data-i="${i}" data-d="-1" aria-label="Move message up" title="Move up"${i===0?' disabled':''}>&uarr;</button>
+        <button class="mv" data-i="${i}" data-d="1" aria-label="Move message down" title="Move down"${i===st.msgs.length-1?' disabled':''}>&darr;</button>
         <input class="tm" data-i="${i}" value="${String(m.time).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">
         <button class="rm" data-i="${i}">&times;</button>
       </div>
@@ -372,6 +374,9 @@ function drawMsgs(){
     </div>`).join('');
   const box=$('#msgs');
   box.querySelectorAll('.side').forEach(b=>b.onclick=()=>{st.msgs[+b.dataset.i].from=b.dataset.s;drawMsgs();render();});
+  box.querySelectorAll('.mv').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i,j=i+ +b.dataset.d; if(j<0||j>=st.msgs.length) return;
+    const t=st.msgs[i]; st.msgs[i]=st.msgs[j]; st.msgs[j]=t; drawMsgs(); render();});
   box.querySelectorAll('.rm').forEach(b=>b.onclick=()=>{st.msgs.splice(+b.dataset.i,1);drawMsgs();render();});
   box.querySelectorAll('textarea').forEach(t=>t.oninput=()=>{st.msgs[+t.dataset.i].text=t.value;render();});
   box.querySelectorAll('.tm').forEach(t=>t.oninput=()=>{st.msgs[+t.dataset.i].time=t.value;render();});

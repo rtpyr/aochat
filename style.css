@@ -40,6 +40,9 @@ input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);
 .msg .side{flex:1;padding:3px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11px}
 .msg .side.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .msg textarea{width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;background:var(--field);color:var(--ink);font:inherit;font-size:12px;resize:vertical;min-height:34px}
+.msg .mv{flex:0 0 24px;padding:3px 0;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11px;line-height:1.2}
+.msg .mv:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.msg .mv:disabled{opacity:.3;cursor:default}
 .msg .rm{border:none;background:none;color:var(--warn);cursor:pointer;font-size:14px;padding:0 4px}
 .msg .tm{width:62px;padding:3px 5px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);font:inherit;font-size:11px}
 button.add{width:100%;padding:7px;border:1px dashed var(--line);border-radius:7px;background:var(--field);color:var(--accent);cursor:pointer;font:inherit;font-weight:600}
