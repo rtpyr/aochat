@@ -958,7 +958,7 @@ document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
     if(!(await AoStore.getMeta('noticeDismissed'))) $('#notice').hidden=false;
   }catch(e){
     PJ.err=e; drawSkins(); drawMsgs(); render(); setStatus('unavailable');
-    $('#noticetx').textContent='Storage is blocked in this browser, so your work is NOT being saved &mdash; export a .json copy before closing.'.replace('&mdash;','—');
+    $('#noticetx').textContent='Your work is NOT being saved because this browser blocks storage, so export a .json copy before closing.';
     $('#nok').hidden=true; $('#notice').hidden=false;
   }
 })();
