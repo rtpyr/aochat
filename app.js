@@ -610,12 +610,7 @@ async function afterSave(){
   if(!PJ.edited||PJ.persist==='persistent'||PJ.persistAsked) return;
   PJ.persistAsked=true; PJ.persist=await AoStore.persistence(true); showPersist();
 }
-function showPersist(){
-  $('#pstate').textContent={persistent:'Browser storage: marked persistent, so the browser should not clear it automatically.',
-    'best-effort':'Browser storage: best-effort — the browser may clear it when space is low or if you clear site data.',
-    unsupported:'This browser cannot confirm whether storage is protected from automatic clearing.',
-    unknown:''}[PJ.persist]||'';
-}
+function showPersist(){}   // result kept in PJ.persist; no menu text
 
 /* cross-tab: keep the project list fresh, never overwrite unsaved work */
 let bc=null; try{ bc=new BroadcastChannel('aochat'); }catch(e){}
