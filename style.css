@@ -316,14 +316,13 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .rb:hover{background:var(--accent-bg);color:var(--ink)}
 .rb:active{background:var(--badge-bg)}
 .rb[aria-current=true]{background:var(--accent);color:var(--on-accent)}
-.rb small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:500;opacity:.8}
 .rb.path{background:var(--accent-bg);color:var(--ink)}
 .rkids{display:flex;flex-direction:column;align-items:center;gap:4px;width:66px;box-sizing:border-box;margin:0 0 0 0;padding-left:6px;border-left:2px solid var(--line)}
 .rb.child{width:100%;font-size:11px;padding:8px 2px 6px}
 .rb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 @media (min-width:901px),(orientation:landscape){ .rail{display:flex;flex-basis:52px;visibility:visible;align-items:stretch;padding:10px 6px;border-right:1px solid var(--line)} }
 /* Closed = icons only. */
-.rail:not(.open) .rb span,.rail:not(.open) .rb small{display:none}
+.rail:not(.open) .rb span{display:none}
 .rail:not(.open) .rb{justify-content:center;padding:9px 0}
 .rail:not(.open) .rkids{padding:6px 0 0;margin-top:6px;border-top:1px solid var(--line)}
 .rail .rb span{white-space:nowrap;overflow:hidden}
@@ -333,7 +332,6 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .rail .rb svg{width:16px;height:16px;flex:none}
 .rail .rb span{flex:1;min-width:0}
 .rail .rb.parent{font-weight:700;color:var(--ink);padding:8px 9px}
-.rail .rb small{flex:0 0 100%;margin:1px 0 0 25px;font-size:11px;font-weight:500;opacity:.75}
 .rail.open .rkids{align-items:stretch;width:auto;gap:2px;margin-top:3px;padding-left:12px;border-left:0}
 .rail .rkids{align-items:stretch;width:auto;gap:2px;border-left:0}
 .rail .rb[aria-current=true]{background:var(--accent-bg);color:var(--ink);font-weight:700;box-shadow:inset 3px 0 0 var(--accent)}

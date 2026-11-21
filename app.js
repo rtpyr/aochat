@@ -1090,7 +1090,7 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   const rails=[$('#rail'),$('#railm')], logo=$('#logo'), build=$('#build');
   const avail=()=>{ const l=SKSECS[st.skin]; return ITEMS.filter(i=>!l||l.includes(i[0])); };
   function paintRail(){
-    const l=avail(), btn=([k,t,i],c)=>`<button class="rb ${c}" data-go="${k}" title="${t}">${i}<span>${t}</span>${c==='parent'?`<small>${esc(SKINS[st.skin].label)}</small>`:''}</button>`;
+    const l=avail(), btn=([k,t,i],c)=>`<button class="rb ${c}" data-go="${k}" title="${t}">${i}<span>${t}</span></button>`;
     const html=btn(l[0],'parent')+`<div class="rkids">${l.slice(1).map(x=>btn(x,'child')).join('')}</div>`;
     rails.forEach(r=>{ r.innerHTML=html; });
   }
