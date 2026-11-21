@@ -1,7 +1,7 @@
 :root{color-scheme:light;--bg:#f4f4f2;--panel:#fff;--ink:#1d1d1f;--muted:#6b6b70;--line:#e3e3e0;
   --accent:#7a7d84;--warn:#b4451f;--ok:#2e7d32;
   --field:#fff;--card:#fcfcfb;--code:#fbfbfa;--accent-bg:#f5f5f4;--badge-bg:#efefed;
-  --badge-red:#fdeee9;--faint:#f3f3f1;--thumb:#c6c6c1;--thumb-hover:#a9a9a3;--on-accent:#fff;
+  --badge-red:#fdeee9;--faint:#f3f3f1;--canvas:#fff;--thumb:#c6c6c1;--thumb-hover:#a9a9a3;--on-accent:#fff;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
 /* one scrollbar style everywhere in the studio. The preview frame is
@@ -17,7 +17,7 @@
 [data-theme=dark]{color-scheme:dark;--bg:#121214;--panel:#1b1b1e;--ink:#f4f4f6;--muted:#bcbcc4;--line:#4d4d56;
   --accent:#d6d8de;--warn:#ff9d7a;--ok:#7fd484;
   --field:#27272c;--card:#222226;--code:#141416;--accent-bg:#3d3d45;--badge-bg:#2f2f35;
-  --badge-red:#4a2c24;--faint:#2f2f35;--thumb:#6c6c75;--thumb-hover:#8c8c96;--on-accent:#131315}
+  --badge-red:#4a2c24;--faint:#2f2f35;--canvas:#2b2b30;--thumb:#6c6c75;--thumb-hover:#8c8c96;--on-accent:#131315}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
 input[type=range]{accent-color:var(--accent)}
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100vh;overflow:hidden;font-size:13px}
@@ -67,7 +67,7 @@ input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);
 button.add{width:100%;padding:7px;border:1px dashed var(--line);border-radius:7px;background:var(--field);color:var(--accent);cursor:pointer;font:inherit;font-weight:600}
 .head{padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex:0 0 auto}
 iframe{border:none;background:#fff;display:block;position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0}
-.pvbox{flex:1;position:relative;min-height:0;overflow:hidden;background:#fff}
+.pvbox{flex:1;position:relative;min-height:0;overflow:hidden;background:var(--canvas)}
 .zoom{display:flex;gap:4px;align-items:center}
 .zoom button{padding:3px 11px;min-width:34px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);font:inherit;font-size:14px;line-height:1.3;cursor:pointer}
 .zoom button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
@@ -284,7 +284,7 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   body[data-view=edit] #build{display:flex;position:absolute;left:0;right:0;bottom:0;width:auto;height:var(--sheet-h,48px);flex:none;box-sizing:border-box;z-index:15;border-top:1px solid var(--line);border-right:none;border-radius:14px 14px 0 0}
   body[data-view=code] #build{display:none}
   body[data-sheet=min] #build{overflow:hidden;background:transparent;border-top-color:transparent}
-  body[data-view=edit][data-sheet=min] main{background:#fff}   /* same canvas colour as .pvbox */
+  body[data-view=edit][data-sheet=min] main{background:var(--canvas)}   /* same canvas colour as .pvbox */
   body[data-sheet=min] .sgrab{background:transparent}
   body[data-sheet=min] .sgrab span{background:var(--thumb)}
   #build,.sgrab{transition:background-color .25s ease,border-color .25s ease}

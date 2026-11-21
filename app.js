@@ -654,7 +654,7 @@ function renderOut(){
 function render(){
   const r=renderOut();
   $('#pv').srcdoc=`<!DOCTYPE html><html><head><meta charset="utf-8">
-    <style>${BASE}</style><style>${r.cc.css}</style><style>${EDIT_CSS}</style></head>
+    <style>${BASE}</style><style>body{background:${getComputedStyle(document.documentElement).getPropertyValue('--canvas').trim()||'#fff'}}</style><style>${r.cc.css}</style><style>${EDIT_CSS}</style></head>
     <body><div id="workskin"><div class="userstuff">${r.ch.html}</div></div>
     <scr`+`ipt>${EDIT_JS}</scr`+`ipt></body></html>`;
   snapshot();
@@ -708,7 +708,8 @@ function restore(j){
 }
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t);
   $('#theme').setAttribute('aria-checked',String(t==='dark'));
-  try{ localStorage.setItem('aochat-theme',t); }catch(e){} }
+  try{ localStorage.setItem('aochat-theme',t); }catch(e){}
+  if($('#pv').getAttribute('srcdoc')) render(); }   // repaint the page behind the phone
 $('#theme').onclick=()=>setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 $('#theme').setAttribute('aria-checked',String(document.documentElement.getAttribute('data-theme')==='dark'));
 $('#undo').onclick=()=>{ if(hi>0){ hi--; restore(hist[hi]); } };
