@@ -189,6 +189,7 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   body{height:100vh;height:100dvh}
   header{padding:6px 10px;gap:6px 8px}
   header>span[style]{display:none}
+  .tbtn{order:0}
   header h1{order:1}
   .proj{order:2;flex:0 1 160px;min-width:0;max-width:160px;font-size:13px;padding:4px 6px;min-height:30px}
   .savest{order:3;min-width:0;margin-left:auto}
@@ -252,6 +253,7 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 @media (max-height:500px) and (orientation:landscape) and (pointer:coarse){
   body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
   header{flex-wrap:nowrap;padding:2px 10px;gap:8px}
+  .tbtn{order:0}
   header h1{order:1}
   .proj{order:2;flex:0 0 150px;max-width:150px}
   .hact{order:3;flex:1 1 0;min-width:0;overflow-x:auto}
@@ -302,9 +304,10 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 @media (prefers-reduced-motion:reduce){ main.snap,main.snap #build{transition:none!important} }
 
 /* ---- app menu: opens from the logo, Start-menu style ---- */
-header h1{display:flex}
-.logo{display:flex;align-items:center;gap:7px;border:0;border-radius:6px;background:none;color:var(--ink);font:inherit;font-size:14px;font-weight:600;padding:4px 8px;margin:0 -4px;cursor:pointer}
-.logo:hover,.logo[aria-expanded=true]{background:var(--accent-bg)}
+.tbtn{display:flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;border:0;border-radius:6px;background:none;color:var(--ink);cursor:pointer;padding:0}
+.tbtn:hover,.tbtn[aria-expanded=true]{background:var(--accent-bg)}
+.tbtn:active{background:var(--badge-bg)}
+.tbtn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 /* editor section rail: opens from the logo, attached to the left edge of the editor panel */
 .rail,.rail-m{display:none}
 .rail{flex:0 0 0;width:0;box-sizing:border-box;overflow:hidden;visibility:hidden;flex-direction:column;align-items:center;gap:6px;background:var(--panel);transition:flex-basis .26s cubic-bezier(.32,.72,0,1),visibility 0s .26s}
@@ -330,4 +333,4 @@ header h1{display:flex}
   .rail-m .rb{flex:1 0 64px;width:auto}
 }
 @media (prefers-reduced-motion:reduce){ .rail{transition:none!important} }
-@media (max-width:430px){ .logo span{display:none} .logo{padding:4px 6px} }
+@media (max-width:430px){ header h1{display:none} }
