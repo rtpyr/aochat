@@ -283,7 +283,11 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   body[data-view=edit] #mid{display:flex}
   body[data-view=edit] #build{display:flex;position:absolute;left:0;right:0;bottom:0;width:auto;height:var(--sheet-h,48px);flex:none;box-sizing:border-box;z-index:15;border-top:1px solid var(--line);border-right:none;border-radius:14px 14px 0 0}
   body[data-view=code] #build{display:none}
-  body[data-sheet=min] #build{overflow:hidden}
+  body[data-sheet=min] #build{overflow:hidden;background:transparent;border-top-color:transparent}
+  body[data-view=edit][data-sheet=min] main{background:#fff}   /* same canvas colour as .pvbox */
+  body[data-sheet=min] .sgrab{background:transparent}
+  body[data-sheet=min] .sgrab span{background:var(--thumb)}
+  #build,.sgrab{transition:background-color .25s ease,border-color .25s ease}
   body[data-sheet=min] #build>:not(.sgrab){visibility:hidden}
   .sgrab{display:flex;justify-content:center;align-items:center;position:sticky;top:-12px;height:48px;flex:0 0 48px;margin:-12px -12px 0;background:var(--panel);z-index:2;cursor:grab;touch-action:none;border-radius:14px 14px 0 0}
   .sgrab span{width:56px;height:6px;border-radius:3px;background:var(--thumb-hover);transition:width .2s ease,background-color .2s ease}
