@@ -973,14 +973,8 @@ function setSheet(name,px,animate){
   mainEl.style.setProperty('--sheet-h',(px==null?sheetPx()[name]:px)+'px');
   paintTabs();
 }
-// Fit the phone to the screen once (at the half-height sheet). After that the zoom
-// is only changed by the zoom buttons, never by dragging the sheet.
-function fitPreview(){
-  if(!fitPending||!SHEETMQ.matches||!pvH||!pvW) return;
-  const b=$('#pvbox'); if(!b.clientHeight) return;
-  fitPending=false;
-  setZoom(Math.min(1,(b.clientHeight-16)/pvH,(b.clientWidth-16)/pvW));
-}
+// Zoom only ever changes from the zoom buttons; it starts at 100%.
+function fitPreview(){}
 document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
   const v=b.dataset.v;
   if(SHEETMQ.matches&&v!=='code'){
@@ -1020,7 +1014,7 @@ let lastMainH=0;
 new ResizeObserver(()=>{ const H=mainEl.offsetHeight;
   if(SHEETMQ.matches&&H!==lastMainH&&!mainEl.matches(':active')){ setSheet(sheet,null,false); } lastMainH=H; fitPreview(); }).observe(mainEl,{box:'border-box'});
 new ResizeObserver(()=>fitPreview()).observe($('#pvbox'));
-SHEETMQ.addEventListener('change',()=>{ document.body.dataset.view='edit'; fitPending=true; if(SHEETMQ.matches){ setSheet('half',null,false); } else { mainEl.style.removeProperty('--sheet-h'); delete document.body.dataset.sheet; setZoom(1); paintTabs(); } });
+SHEETMQ.addEventListener('change',()=>{ document.body.dataset.view='edit'; if(SHEETMQ.matches){ setSheet('half',null,false); } else { mainEl.style.removeProperty('--sheet-h'); delete document.body.dataset.sheet; paintTabs(); } });
 if(SHEETMQ.matches) setSheet('half',null,false);
 
 /* ---- start up ---- */
