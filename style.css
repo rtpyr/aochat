@@ -325,6 +325,10 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .rb.child{width:100%;font-size:11px;padding:8px 2px 6px}
 .rb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 @media (min-width:901px),(orientation:landscape){ .rail{display:flex;flex-basis:52px;visibility:visible;align-items:stretch;padding:10px 6px;border-right:1px solid var(--line)} }
+/* Collapse control sits at the foot of the sidebar; the header button is only for phones. */
+.rail .rtog{margin-top:auto;font-weight:500}
+.rail:not(.open) .rtog svg{transform:rotate(180deg)}
+@media (min-width:901px),(orientation:landscape){ #logo{display:none} }
 /* Closed = icons only. */
 .rail:not(.open) .rb span{display:none}
 .rail:not(.open) .rb{justify-content:center;padding:9px 0}

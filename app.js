@@ -1098,7 +1098,8 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   function paintRail(){
     const l=avail(), btn=([k,t,i],c)=>`<button class="rb ${c}" data-go="${k}" title="${t}">${i}<span>${t}</span></button>`;
     const html=btn(l[0],'parent')+`<div class="rkids">${l.slice(1).map(x=>btn(x,'child')).join('')}</div>`;
-    rails.forEach(r=>{ r.innerHTML=html; });
+    rails.forEach((r,i)=>{ r.innerHTML=html+(i===0?`<button class="rb rtog" id="rtog" aria-controls="rail" title="Collapse sidebar" aria-label="Collapse or expand the sidebar"><svg width="22" height="22" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 5l-4 4 4 4M14 5l-4 4 4 4"/></svg><span>Collapse</span></button>`:''); });
+    syncTog();
   }
   paintRail();
   const KEY='aochat-rail', SKEY='aochat-sec'; let cur=null;
@@ -1115,8 +1116,9 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
     if(cur&&!avail().some(i=>i[0]===cur)) cur='skin';
     if(cur) show(cur);
   };
+  function syncTog(){ const t=$('#rtog'), o=$('#rail').classList.contains('open'); if(t){ t.setAttribute('aria-expanded',String(o)); t.title=o?'Collapse sidebar':'Expand sidebar'; } }
   function setOpen(on,persist){
-    rails.forEach(r=>r.classList.toggle('open',on)); logo.setAttribute('aria-expanded',String(on));
+    rails.forEach(r=>r.classList.toggle('open',on)); logo.setAttribute('aria-expanded',String(on)); syncTog();
     if(persist) try{ localStorage.setItem(KEY,on?'1':'0'); }catch(e){}
   }
   logo.onclick=()=>setOpen(!$('#rail').classList.contains('open'),true);
@@ -1124,6 +1126,7 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   setOpen(on,false); if(cur) show(cur);
   document.addEventListener('click',e=>{
     const b=e.target.closest('.rb'); if(!b) return;
+    if(b.classList.contains('rtog')){ setOpen(!$('#rail').classList.contains('open'),true); return; }
     if(SHEETMQ.matches&&sheet==='min'){ document.body.dataset.view='edit'; setSheet('half',null,true); }
     show(b.dataset.go); build.scrollTop=0;
   });
