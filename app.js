@@ -663,7 +663,7 @@ $('#addm').onclick=()=>{st.msgs.push({from:'them',text:'new message',time:'9:43 
 /* ---- preview zoom (site chrome only; never part of the export) ------
    Scales the iframe with a transform and enlarges its layout box by 1/z so it
    still fills the pane. -------------------------------------------------- */
-let zoom=1,pvH=0,pvW=0,autoFit=true;
+let zoom=1,pvH=0,pvW=0,fitPending=true;
 const ZMIN=.25,ZMAX=2;
 function setZoom(z){
   zoom=Math.min(ZMAX,Math.max(ZMIN,Math.round(z*100)/100));
@@ -672,9 +672,9 @@ function setZoom(z){
   $('#zout').disabled=zoom<=ZMIN; $('#zin').disabled=zoom>=ZMAX;
 }
 const zstep=z=>z>=1?.25:.1;
-$('#zout').onclick=()=>{ autoFit=false; setZoom(zoom-zstep(zoom-.001)); };
-$('#zin').onclick=()=>{ autoFit=false; setZoom(zoom+zstep(zoom)); };
-$('#zval').onclick=()=>{ autoFit=false; setZoom(1); };
+$('#zout').onclick=()=>{ fitPending=false; setZoom(zoom-zstep(zoom-.001)); };
+$('#zin').onclick=()=>{ fitPending=false; setZoom(zoom+zstep(zoom)); };
+$('#zval').onclick=()=>{ fitPending=false; setZoom(1); };
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
@@ -973,9 +973,12 @@ function setSheet(name,px,animate){
   mainEl.style.setProperty('--sheet-h',(px==null?sheetPx()[name]:px)+'px');
   paintTabs();
 }
+// Fit the phone to the screen once (at the half-height sheet). After that the zoom
+// is only changed by the zoom buttons, never by dragging the sheet.
 function fitPreview(){
-  if(!SHEETMQ.matches||!autoFit||!pvH||!pvW) return;
+  if(!fitPending||!SHEETMQ.matches||!pvH||!pvW) return;
   const b=$('#pvbox'); if(!b.clientHeight) return;
+  fitPending=false;
   setZoom(Math.min(1,(b.clientHeight-16)/pvH,(b.clientWidth-16)/pvW));
 }
 document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
@@ -986,7 +989,7 @@ document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
   } else {
     document.body.dataset.view=v==='preview'&&SHEETMQ.matches?'edit':v; paintTabs();
   }
-  autoFit=true; closeMenu(); closeWho(); closeTime();
+  closeMenu(); closeWho(); closeTime();
 });
 // drag the handle; a plain tap toggles half / full
 (function(){
@@ -998,7 +1001,7 @@ document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
     if(Math.abs(e.clientY-sy)>5) moved=true; if(!moved) return;
     const p=sheetPx(); const h=Math.min(p.full,Math.max(p.min,sh-(e.clientY-sy)));
     mainEl.style.setProperty('--sheet-h',h+'px'); last.push([e.timeStamp,e.clientY]); if(last.length>5) last.shift();
-    autoFit=true; fitPreview(); };
+  };
   const end=e=>{ if(id!==e.pointerId) return; id=null;
     const p=sheetPx();
     if(!moved){ setSheet(sheet==='half'?'full':sheet==='full'?'half':'half',null,true); return; }
@@ -1017,7 +1020,7 @@ let lastMainH=0;
 new ResizeObserver(()=>{ const H=mainEl.offsetHeight;
   if(SHEETMQ.matches&&H!==lastMainH&&!mainEl.matches(':active')){ setSheet(sheet,null,false); } lastMainH=H; fitPreview(); }).observe(mainEl,{box:'border-box'});
 new ResizeObserver(()=>fitPreview()).observe($('#pvbox'));
-SHEETMQ.addEventListener('change',()=>{ document.body.dataset.view='edit'; autoFit=true; if(SHEETMQ.matches){ setSheet('half',null,false); } else { mainEl.style.removeProperty('--sheet-h'); delete document.body.dataset.sheet; setZoom(1); paintTabs(); } });
+SHEETMQ.addEventListener('change',()=>{ document.body.dataset.view='edit'; fitPending=true; if(SHEETMQ.matches){ setSheet('half',null,false); } else { mainEl.style.removeProperty('--sheet-h'); delete document.body.dataset.sheet; setZoom(1); paintTabs(); } });
 if(SHEETMQ.matches) setSheet('half',null,false);
 
 /* ---- start up ---- */
