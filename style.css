@@ -326,8 +326,11 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .rb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 @media (min-width:901px),(orientation:landscape){ .rail{display:flex;flex-basis:52px;visibility:visible;align-items:stretch;padding:10px 6px;border-right:1px solid var(--line)} }
 /* Collapse control sits at the foot of the sidebar; the header button is only for phones. */
-.rail .rtog{margin-top:auto;font-weight:500}
+.rail .rtog{margin-top:auto}
+.rail .rtog svg{transition:transform .26s cubic-bezier(.32,.72,0,1)}
 .rail:not(.open) .rtog svg{transform:rotate(180deg)}
+.rail.open .rtog{justify-content:flex-start}
+.rail:not(.open) .rtog{justify-content:center}
 @media (min-width:901px),(orientation:landscape){ #logo{display:none} }
 /* Closed = icons only. */
 .rail:not(.open) .rb span{display:none}
@@ -361,7 +364,7 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   .rail-m .rkids{flex:3 0 0;flex-direction:row;width:auto;gap:4px;padding-left:6px;margin-left:2px}
   .rail-m .rb.child{flex:1 0 56px}
 }
-@media (prefers-reduced-motion:reduce){ .rail{transition:none!important} }
+@media (prefers-reduced-motion:reduce){ .rail,.rail .rtog svg{transition:none!important} }
 @media (max-width:430px){ header h1{display:none} }
 
 /* skin-specific options in the Skin section */
