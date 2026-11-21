@@ -156,7 +156,15 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .cfoot{margin-top:4px;text-align:right}
 .ctoday{padding:3px 10px!important;border-color:var(--line)!important;background:var(--field)!important}
 .ctime{display:flex;gap:4px;height:218px}
-.tc{display:flex;flex-direction:column;gap:2px;overflow-y:auto;padding-right:2px;scrollbar-width:thin}
+.tc{display:flex;flex-direction:column;gap:2px;overflow-y:auto;overflow-x:hidden;padding-right:2px}
+/* Same slim, arrow-less scrollbar as the rest of the studio, fixed size (it does not
+   swell on hover). Setting scrollbar-width/color would switch this to the native bar. */
+.tc{scrollbar-width:auto;scrollbar-color:auto}
+.tc::-webkit-scrollbar{width:10px;height:0}
+.tc::-webkit-scrollbar-track{background:transparent}
+.tc::-webkit-scrollbar-thumb{background:var(--thumb);border-radius:8px;border:2px solid var(--panel);background-clip:padding-box}
+.tc::-webkit-scrollbar-thumb:hover{background:var(--thumb-hover);background-clip:padding-box}
+.tc::-webkit-scrollbar-button{display:none;width:0;height:0}
 .ti{min-width:38px;height:26px;flex:0 0 auto}
 .tpop button{width:auto;text-align:center}
 .tpop .cal .ti{width:100%}
