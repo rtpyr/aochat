@@ -349,6 +349,15 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .rail .rb svg{width:16px;height:16px;flex:none}
 .rail .rb span{flex:1;min-width:0}
 .rail .rb.parent{padding:8px 9px}
+.rail .rb.parent span{flex:0 1 auto}
+.rail .rb .ico.mini{display:grid;place-items:center;width:18px;height:18px;border-radius:5px;overflow:hidden;flex:none}
+.rail .rb .ico.mini svg,.rail .rb .ico.mini img{width:12px;height:12px}
+.rail .rb .ico.mini img{width:18px;height:18px;display:block}
+.rail:not(.open) .rb.parent>svg{display:none}
+.rail:not(.open) .rb .ico.mini{width:22px;height:22px;border-radius:6px}
+.rail:not(.open) .rb .ico.mini svg{width:15px;height:15px}
+.rail:not(.open) .rb .ico.mini img{width:22px;height:22px}
+.rail-m .ico.mini{display:none}
 .rail.open .rkids{align-items:stretch;width:auto;gap:2px;margin-top:3px;padding-left:12px;border-left:0}
 .rail .rkids{align-items:stretch;width:auto;gap:2px;border-left:0}
 .rail .rb[aria-current=true]{background:var(--accent-bg);color:var(--ink);font-weight:400;box-shadow:inset 3px 0 0 var(--accent)}
