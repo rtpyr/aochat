@@ -421,8 +421,8 @@ window.addEventListener('message',function(e){
     st.msgs[m.idx].text=m.value;
     const ta=document.querySelector('#msgs textarea[data-i="'+m.idx+'"]');
     if(ta) ta.value=m.value;
-  } else if(m.kind==='name'){ st.name=m.value; $('#cname').value=m.value; }
-  else if(m.kind==='status'){ st.status=m.value; $('#cstat').value=m.value; }
+  } else if(m.kind==='name'){ st.name=m.value; }
+  else if(m.kind==='status'){ st.status=m.value; }
   // A message edit is already visible in the frame, so outputs are enough.
   // Name/status can also appear per row (KakaoTalk), so refresh once settled.
   if(m.done&&m.kind!=='msg') render(); else renderOut();
@@ -448,10 +448,6 @@ function render(){
   snapshot();
 }
 $('#addm').onclick=()=>{st.msgs.push({from:'them',text:'new message',time:'9:43'});drawMsgs();render();};
-$('#sw').oninput=e=>{st.w=+e.target.value;$('#swv').textContent=st.w+'px';render();};
-$('#sh').oninput=e=>{st.h=+e.target.value;$('#shv').textContent=st.h+'px';render();};
-$('#cname').oninput=e=>{st.name=e.target.value;render();};
-$('#cstat').oninput=e=>{st.status=e.target.value;render();};
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
@@ -478,9 +474,6 @@ function syncHist(){ $('#undo').disabled=hi<=0; $('#redo').disabled=hi>=hist.len
 function restore(j){
   restoring=true;
   const o=JSON.parse(j); Object.keys(o).forEach(k=>st[k]=o[k]);
-  $('#cname').value=st.name; $('#cstat').value=st.status;
-  $('#sw').value=st.w; $('#swv').textContent=st.w+'px';
-  $('#sh').value=st.h; $('#shv').textContent=st.h+'px';
   drawSkins(); drawMsgs(); render();
   restoring=false; syncHist();
 }
