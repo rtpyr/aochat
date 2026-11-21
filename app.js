@@ -920,11 +920,14 @@ mbtn.onclick=e=>{ e.stopPropagation();
   menu.hidden=false; mbtn.setAttribute('aria-expanded','true'); menu.querySelector('button').focus(); };
 document.addEventListener('click',e=>{ if(!menu.hidden&&!menu.contains(e.target)) closeMenu(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!menu.hidden){ closeMenu(); mbtn.focus(); } });
-menu.onclick=e=>{ const b=e.target.closest('button[data-a]'); if(!b) return; closeMenu();
+function act(b){
   const needs=['rename','dup','del','new'].includes(b.dataset.a)&&!PJ.ready;
   if(needs){ fail('Storage is unavailable','Projects cannot be created, renamed or deleted because this browser is not allowing local storage. You can still Export and Import.'); return; }
   ({new:newProject,rename:renameProject,dup:duplicateProject,del:deleteProject,exp:exportCurrent,expall:()=>PJ.ready?exportAll():exportCurrent(),
-    imp:()=>$('#impf').click()})[b.dataset.a](); };
+    imp:()=>$('#impf').click()})[b.dataset.a]();
+}
+menu.onclick=e=>{ const b=e.target.closest('button[data-a]'); if(b){ closeMenu(); act(b); } };
+$('#hact').onclick=e=>{ const b=e.target.closest('button[data-a]'); if(b) act(b); };
 $('#impf').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f) importFile(f); };
 $('#proj').onchange=e=>openId(e.target.value);
 $('#nok').onclick=()=>{ $('#notice').hidden=true; AoStore.setMeta('noticeDismissed',true).catch(()=>{}); };

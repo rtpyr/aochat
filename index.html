@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>aochat</title>
-<link rel="stylesheet" href="style.css?v=8fea2827">
+<link rel="stylesheet" href="style.css?v=3e779bcb">
 <script>
 /* site theme only; the phone preview is never themed */
 (function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
@@ -16,20 +16,22 @@
 <header>
   <h1>aochat</h1>
   <select id="proj" class="proj" aria-label="Project" title="Switch project" disabled></select>
-  <button class="hbtn pbtn" id="pbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="pmenu" title="Project menu" aria-label="Project menu">&#8943;</button>
+  <div class="hact" id="hact">
+    <button class="hbtn txt" data-a="new" title="New project">New</button>
+    <button class="hbtn txt" data-a="rename" title="Rename this project">Rename</button>
+    <button class="hbtn txt" data-a="dup" title="Duplicate this project">Duplicate</button>
+    <button class="hbtn txt danger" data-a="del" title="Delete this project">Delete</button>
+    <span class="hsep"></span>
+    <button class="hbtn txt" id="pbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="pmenu" title="Export a .json backup">Export <span class="ech"></span></button>
+    <button class="hbtn txt" data-a="imp" title="Import a .json backup">Import</button>
+  </div>
   <span style="flex:1"></span>
   <span class="savest" id="savest" role="status" aria-live="polite"><i class="dot"></i><span id="savetx">Opening&hellip;</span></span>
   <button class="switch" id="theme" role="switch" aria-checked="false" aria-label="Dark mode" title="Dark mode"><span class="trk"></span></button>
 </header>
 <div class="pmenu" id="pmenu" role="menu" hidden>
-  <button role="menuitem" data-a="new">New project</button>
-  <button role="menuitem" data-a="rename">Rename&hellip;</button>
-  <button role="menuitem" data-a="dup">Duplicate</button>
-  <button role="menuitem" data-a="del" class="danger">Delete&hellip;</button>
-  <hr>
-  <button role="menuitem" data-a="exp">Export this project (.json)</button>
-  <button role="menuitem" data-a="expall">Export all projects (.json)</button>
-  <button role="menuitem" data-a="imp">Import from .json&hellip;</button>
+  <button role="menuitem" data-a="exp">This project (.json)</button>
+  <button role="menuitem" data-a="expall">All projects (.json)</button>
 </div>
 <input type="file" id="impf" accept=".json,application/json" hidden>
 <div class="notice" id="notice" hidden>
@@ -82,7 +84,7 @@
   </div>
 </main>
 
-<script src="store.js?v=8fea2827"></script>
-<script src="app.js?v=8fea2827"></script>
+<script src="store.js?v=3e779bcb"></script>
+<script src="app.js?v=3e779bcb"></script>
 </body>
 </html>
