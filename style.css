@@ -190,8 +190,8 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   header{padding:6px 10px;gap:6px 8px}
   header>span[style]{display:none}
   header h1{order:1}
-  .proj{order:2;flex:1 1 0;min-width:0;max-width:none;font-size:13px;padding:4px 6px;min-height:30px}
-  .savest{order:3;min-width:0}
+  .proj{order:2;flex:0 1 160px;min-width:0;max-width:160px;font-size:13px;padding:4px 6px;min-height:30px}
+  .savest{order:3;min-width:0;margin-left:auto}
   #savetx{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #theme{order:4}
   .hact{order:5;flex:0 0 100%;flex-wrap:nowrap;overflow-x:auto;gap:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -243,4 +243,6 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   .dact button{padding:9px 16px}
   .notice{padding:8px 10px}
 }
+@media (max-width:380px){ .proj{flex-basis:125px;max-width:125px} }
+@media (max-width:340px){ #savetx{display:none} }
 @media (pointer:coarse){ .mvbox .grip{display:none} }
