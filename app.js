@@ -203,6 +203,15 @@ const SKINS={
    head:'#afc0cf',headInk:'#282a2b',tick:'',accent:'#282a2b',mineInk:'#282a2b',
    comp:'#f8f8f8',avR:'12px',nameAbove:true,timeOutside:true}
 };
+/* Per-skin options. Only the skins that list an option show it in the sidebar. They change the
+   generated markup only (same div/span/p + class), never the CSS. */
+const OPTDEF={ticks:true,read:false,names:true,outside:true,day:'Today'};
+const SKOPT={
+ whatsapp:[['ticks','Read ticks on sent messages']],
+ imessage:[['read','Show "Read" on the last sent message']],
+ line:[['read','Show "Read" on the last sent message']],
+ kakao:[['names','Sender name above the bubble'],['outside','Time beside the bubble']]
+};
 const PFX='chat';   // class prefix — change here, everything follows
 
 function buildCss(k,w,h){
@@ -311,27 +320,30 @@ function formatCss(css){
 }
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function buildHtml(st){
-  const s=SKINS[st.skin],P=PFX;
+  const s=SKINS[st.skin],P=PFX, o=Object.assign({},OPTDEF,st.opt);
+  const lastMe=st.msgs.reduce((a,m,i)=>m.from==='me'?i:a,-1);
+  const timeOut=s.timeOutside&&o.outside, nameOn=s.nameAbove&&o.names;
   const ini=st.name.trim().split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase()||'?';
-  const rows=st.msgs.map(m=>{
+  const rows=st.msgs.map((m,i)=>{
     const me=m.from==='me';
-    const tick=(me&&s.tick)?' '+s.tick:'';
+    const tick=(me&&s.tick&&o.ticks)?' '+s.tick:'';
+    const rd=(me&&o.read&&SKOPT[st.skin].some(x=>x[0]==='read')&&i===lastMe)?'Read ':'';
     // Skins like KakaoTalk hang the time outside the bubble, name above it.
-    if(s.timeOutside){
+    if(timeOut){
       const bub=`<span class="${P}-bub${me?' '+P+'-mine':''}">`+esc(m.text)+`</span>`;
       const t=`<span class="${P}-ot">`+esc(m.time)+`</span>`;
       if(me) return `    <p class="${P}-row ${P}-out">`+t+bub+`</p>`;
       return `    <p class="${P}-row ${P}-in"><span class="${P}-av2">`+esc(ini)+`</span><span class="${P}-stack">`
-        +(s.nameAbove?`<span class="${P}-who">`+esc(st.name)+`</span>`:'')+bub+`</span>`+t+`</p>`;
+        +(nameOn?`<span class="${P}-who">`+esc(st.name)+`</span>`:'')+bub+`</span>`+t+`</p>`;
     }
     return `    <p class="${P}-row ${P}-${me?'out':'in'}"><span class="${P}-bub${me?' '+P+'-mine':''}">`
-      +esc(m.text)+` <span class="${P}-time">`+esc(m.time)+tick+`</span></span></p>`;
+      +esc(m.text)+` <span class="${P}-time">`+rd+esc(m.time)+tick+`</span></span></p>`;
   }).join('\n');
   return `<div class="${P}-phone">
   <p class="${P}-bar">9:41</p>
   <p class="${P}-head"><span class="${P}-av">${esc(ini)}</span><span class="${P}-nm">${esc(st.name)}</span><span class="${P}-on">${esc(st.status)}</span></p>
   <div class="${P}-body">
-    <p class="${P}-day"><span class="${P}-daytag">Today</span></p>
+    <p class="${P}-day"><span class="${P}-daytag">${esc(o.day||'Today')}</span></p>
 ${rows}
   </div>
   <p class="${P}-comp"><span class="${P}-field"></span></p>
@@ -348,7 +360,7 @@ const BASE=`html,body{margin:0}body{background:#fff;color:#2a2a2a;
  .userstuff blockquote{margin:1em 2em}`;
 
 /* ---- state + wiring ---- */
-const st={skin:'whatsapp',w:300,h:360,name:'Maya Rivera',status:'online',msgs:[
+const st={skin:'whatsapp',w:300,h:360,name:'Maya Rivera',status:'online',opt:Object.assign({},OPTDEF),msgs:[
  {from:'them',text:'did you tell Sam dinner is at 8?',time:'9:41 AM'},
  {from:'me',text:'I told him 7:30.',time:'9:41 AM'},
  {from:'them',text:"smart. he'll arrive at 8.",time:'9:42 AM'}]};
@@ -358,6 +370,19 @@ function drawSkins(){
   $('#skins').innerHTML=Object.entries(SKINS).map(([k,v])=>
     `<button class="skin${k===st.skin?' on':''}" data-k="${k}">${v.label}</button>`).join('');
   $('#skins').querySelectorAll('.skin').forEach(b=>b.onclick=()=>{st.skin=b.dataset.k;drawSkins();render();});
+  drawOpts(); railSync();
+}
+var railSync=function(){};
+/* Which sidebar sections each skin offers. Add a key to SKSECS to change one skin's list. */
+const SKSECS={whatsapp:['skin','opts','msgs','device'],imessage:['skin','opts','msgs','device'],line:['skin','opts','msgs','device'],kakao:['skin','opts','msgs','device']};
+/* Options that belong to the chosen skin; the list changes when the skin does. */
+function drawOpts(){
+  const box=$('#skopts'), list=SKOPT[st.skin]||[], o=Object.assign({},OPTDEF,st.opt);
+  box.innerHTML=`<label class="f">${SKINS[st.skin].label} options</label>`
+    +list.map(([k,l])=>`<button class="switch orow" role="switch" aria-checked="${!!o[k]}" data-o="${k}"><span>${l}</span><i class="trk"></i></button>`).join('')
+    +`<label class="orow dayrow"><span>Date label</span><input type="text" id="oday" maxlength="24" value="${esc(o.day)}" aria-label="Date label"></label>`;
+  box.querySelectorAll('.orow[data-o]').forEach(b=>b.onclick=()=>{ st.opt=Object.assign({},OPTDEF,st.opt); const k=b.dataset.o; st.opt[k]=!st.opt[k]; b.setAttribute('aria-checked',String(st.opt[k])); render(); });
+  $('#oday').oninput=e=>{ st.opt=Object.assign({},OPTDEF,st.opt); st.opt.day=e.target.value; render(); };
 }
 /* Time picker: click the time to open a native date + time field. Its segments
    are keyboard-editable and its calendar button opens the browser's date picker.
@@ -733,7 +758,7 @@ window.addEventListener('keydown',e=>{
    real result of each IndexedDB transaction, never assumed. -------------- */
 const PJ={cur:null,list:[],ready:false,timer:null,writing:null,lastJson:'',failed:false,err:null,
   edited:false,persist:'unknown',status:'loading'};
-const DEFAULT_ST=JSON.stringify({skin:st.skin,w:st.w,h:st.h,name:st.name,status:st.status,msgs:st.msgs});
+const DEFAULT_ST=JSON.stringify({skin:st.skin,w:st.w,h:st.h,name:st.name,status:st.status,opt:st.opt,msgs:st.msgs});
 
 /* Accept only the fields the editor understands, whatever the source (old
    save, imported file). Same shape as `st`; unknown keys are dropped. */
@@ -755,7 +780,9 @@ function cleanState(d){
     .map(m=>{ const r={from:(m&&m.from==='me')?'me':'them',text:str(m&&m.text,5000,''),time:normTime(str(m&&m.time,40,''))};
       if(m&&typeof m.at==='string'&&/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(m.at)) r.at=m.at; return r; });
   return {skin:SKINS[o.skin]?o.skin:base.skin,w:num(o.w,100,1000,base.w),h:num(o.h,100,2000,base.h),
-    name:str(o.name,200,base.name),status:str(o.status,200,base.status),msgs};
+    name:str(o.name,200,base.name),status:str(o.status,200,base.status),
+    opt:(()=>{ const p=(o.opt&&typeof o.opt==='object')?o.opt:{}, r={};
+      Object.keys(OPTDEF).forEach(k=>{ r[k]=typeof OPTDEF[k]==='boolean'?(typeof p[k]==='boolean'?p[k]:OPTDEF[k]):str(p[k],24,OPTDEF[k]); }); return r; })(),msgs};
 }
 function applyState(data){ const c=cleanState(data); Object.keys(st).forEach(k=>delete st[k]); Object.assign(st,c); }
 function showProject(rec){
@@ -1056,11 +1083,16 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   const I=d=>`<svg width="22" height="22" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ITEMS=[
     ['skin','Skin',I('<path d="M9 2.8a6.2 6.2 0 100 12.4c1 0 1.5-.7 1.5-1.4 0-1-1-1.2-1-2.1 0-.8.6-1.3 1.5-1.3H13a2.2 2.2 0 002.2-2.2C15 5.3 12.4 2.8 9 2.8z"/><circle cx="5.8" cy="8.2" r=".7"/><circle cx="8.4" cy="5.7" r=".7"/><circle cx="11.7" cy="6.4" r=".7"/>')],
+    ['opts','Options',I('<path d="M3 5h12M3 9h12M3 13h12"/><circle cx="6.5" cy="5" r="1.4"/><circle cx="11.5" cy="9" r="1.4"/><circle cx="7.5" cy="13" r="1.4"/>')],
     ['msgs','Messages',I('<path d="M3 4.5A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5v6a1.5 1.5 0 01-1.5 1.5H8l-3 3v-3A1.5 1.5 0 013 10.5z"/>')],
     ['device','Device',I('<rect x="5" y="2.2" width="8" height="13.6" rx="1.8"/><path d="M8 13.3h2"/>')]
   ];
   const rails=[$('#rail'),$('#railm')], logo=$('#logo'), build=$('#build');
-  rails.forEach(r=>{ r.innerHTML=ITEMS.map(([k,l,i])=>`<button class="rb" data-go="${k}">${i}<span>${l}</span></button>`).join(''); });
+  const avail=()=>{ const l=SKSECS[st.skin]; return ITEMS.filter(i=>!l||l.includes(i[0])); };
+  function paintRail(){
+    rails.forEach(r=>{ r.innerHTML=avail().map(([k,l,i])=>`<button class="rb" data-go="${k}">${i}<span>${l}</span></button>`).join(''); });
+  }
+  paintRail();
   const KEY='aochat-rail', SKEY='aochat-sec'; let cur=null;
   try{ const v=localStorage.getItem(SKEY); if(ITEMS.some(i=>i[0]===v)) cur=v; }catch(e){}
   // The chosen section sticks, whether or not the rail is showing. Until one is chosen, every section is listed.
@@ -1070,6 +1102,11 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
     build.classList.add('tabbed');
     build.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.dataset.sec===k));
   }
+  railSync=function(){
+    paintRail();
+    if(cur&&!avail().some(i=>i[0]===cur)) cur='skin';
+    if(cur) show(cur);
+  };
   function setOpen(on,persist){
     rails.forEach(r=>r.classList.toggle('open',on)); logo.setAttribute('aria-expanded',String(on));
     if(persist) try{ localStorage.setItem(KEY,on?'1':'0'); }catch(e){}
