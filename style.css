@@ -374,7 +374,8 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 @media (max-width:900px){ body:not([data-view=edit]) .rail{display:none} }
 @media (max-width:900px) and (orientation:portrait){
   .rail{display:none!important}
-  .rail-m.open{display:flex;flex:none;gap:4px;margin:0 -12px 10px;padding:0 10px 8px;border-bottom:1px solid var(--line);overflow-x:auto}
+  .rail-m.open{display:flex;flex:none;gap:4px;margin:0 -12px 10px;padding:0 10px 8px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:36px;z-index:1;background:var(--panel);transition:transform .22s cubic-bezier(.32,.72,0,1)}
+  .rail-m.open.hide{transform:translateY(-100%)}
   .rail-m .rb{flex:1 0 62px;width:auto;gap:3px;padding:7px 4px 6px;border-radius:6px;color:var(--ink);font-size:11.5px;font-weight:400}
   .rail-m .rb svg{width:20px;height:20px}
   .rail-m .rb[aria-current=true]{background:var(--accent-bg);color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
@@ -388,7 +389,7 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   .rail-m .rkids{flex:3 0 0;flex-direction:row;width:auto;gap:4px;padding-left:6px;margin-left:4px;border-left:1px solid var(--line)}
   .rail-m .rb.child{flex:1 0 56px}
 }
-@media (prefers-reduced-motion:reduce){ .rail,.rail .rtog svg{transition:none!important} .rtog path{animation:none!important} }
+@media (prefers-reduced-motion:reduce){ .rail,.rail .rtog svg,.rail-m{transition:none!important} .rtog path{animation:none!important} }
 @media (max-width:430px){ header h1{display:none} }
 
 /* skin-specific options in the Skin section */

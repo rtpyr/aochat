@@ -1127,11 +1127,18 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   logo.onclick=()=>setOpen(!$('#rail').classList.contains('open'),true);
   let on=true; try{ const v=localStorage.getItem(KEY); if(v!==null) on=v==='1'; }catch(e){}
   setOpen(on,false); show(cur||'skin');
+  // Phone strip: tucks away while scrolling down a long section, returns on any scroll up.
+  let lastY=0;
+  build.addEventListener('scroll',()=>{
+    const m=$('#railm'), y=build.scrollTop, d=y-lastY;
+    if(y<24||d<-6) m.classList.remove('hide'); else if(d>6) m.classList.add('hide');
+    lastY=y;
+  },{passive:true});
   document.addEventListener('click',e=>{
     const b=e.target.closest('.rb'); if(!b) return;
     if(b.classList.contains('rtog')){ setOpen(!$('#rail').classList.contains('open'),true); return; }
     if(SHEETMQ.matches&&sheet==='min'){ document.body.dataset.view='edit'; setSheet('half',null,true); }
-    show(b.dataset.go); build.scrollTop=0;
+    show(b.dataset.go); build.scrollTop=0; $('#railm').classList.remove('hide');
   });
 })();
 
