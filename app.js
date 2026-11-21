@@ -349,9 +349,9 @@ const BASE=`html,body{margin:0}body{background:#fff;color:#2a2a2a;
 
 /* ---- state + wiring ---- */
 const st={skin:'whatsapp',w:300,h:360,name:'Maya Rivera',status:'online',msgs:[
- {from:'them',text:'did you tell Sam dinner is at 8?',time:'9:41'},
- {from:'me',text:'I told him 7:30.',time:'9:41'},
- {from:'them',text:"smart. he'll arrive at 8.",time:'9:42'}]};
+ {from:'them',text:'did you tell Sam dinner is at 8?',time:'9:41 AM'},
+ {from:'me',text:'I told him 7:30.',time:'9:41 AM'},
+ {from:'them',text:"smart. he'll arrive at 8.",time:'9:42 AM'}]};
 const $=s=>document.querySelector(s);
 
 function drawSkins(){
@@ -641,7 +641,7 @@ function render(){
     <scr`+`ipt>${EDIT_JS}</scr`+`ipt></body></html>`;
   snapshot();
 }
-$('#addm').onclick=()=>{st.msgs.push({from:'them',text:'new message',time:'9:43'});drawMsgs();render();};
+$('#addm').onclick=()=>{st.msgs.push({from:'them',text:'new message',time:'9:43 AM'});drawMsgs();render();};
 /* ---- preview zoom (site chrome only; never part of the export) ------
    Scales the iframe with a transform and enlarges its layout box by 1/z so it
    still fills the pane. -------------------------------------------------- */
@@ -713,12 +713,22 @@ const DEFAULT_ST=JSON.stringify({skin:st.skin,w:st.w,h:st.h,name:st.name,status:
 
 /* Accept only the fields the editor understands, whatever the source (old
    save, imported file). Same shape as `st`; unknown keys are dropped. */
+/* Times are always shown as "h:mm AM/PM". Plain "9:41" / "21:05" / "9:41 pm" from older
+   saves or imports are converted once; anything else typed freely is left alone. */
+function normTime(t){
+  let m=/^\s*(\d{1,2}):(\d{2})\s*$/.exec(t), h, ap;
+  if(m){ h=+m[1]; if(h>23) return t; ap=h<12?'AM':'PM'; }
+  else if((m=/^\s*(\d{1,2}):(\d{2})\s*([ap])\.?m\.?\s*$/i.exec(t))){ h=+m[1]; if(h<1||h>12) return t; ap=m[3].toUpperCase()+'M'; }
+  else return t;
+  if(+m[2]>59) return t;
+  return (h%12||12)+':'+m[2]+' '+ap;
+}
 function cleanState(d){
   const base=JSON.parse(DEFAULT_ST), o=(d&&typeof d==='object')?d:{};
   const str=(v,max,def)=>typeof v==='string'?v.slice(0,max):def;
   const num=(v,lo,hi,def)=>(typeof v==='number'&&isFinite(v))?Math.min(hi,Math.max(lo,v)):def;
   const msgs=(Array.isArray(o.msgs)?o.msgs:base.msgs).slice(0,1000)
-    .map(m=>{ const r={from:(m&&m.from==='me')?'me':'them',text:str(m&&m.text,5000,''),time:str(m&&m.time,40,'')};
+    .map(m=>{ const r={from:(m&&m.from==='me')?'me':'them',text:str(m&&m.text,5000,''),time:normTime(str(m&&m.time,40,''))};
       if(m&&typeof m.at==='string'&&/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(m.at)) r.at=m.at; return r; });
   return {skin:SKINS[o.skin]?o.skin:base.skin,w:num(o.w,100,1000,base.w),h:num(o.h,100,2000,base.h),
     name:str(o.name,200,base.name),status:str(o.status,200,base.status),msgs};
