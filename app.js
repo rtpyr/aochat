@@ -1018,14 +1018,19 @@ function dEnd(){ mainEl.classList.remove('dragging'); if(!D.moved) return false;
   sgrab.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setSheet(sheet==='full'?'half':'full',null,true); }
     else if(e.key==='ArrowUp'){ e.preventDefault(); setSheet(sheet==='min'?'half':'full',null,true); }
     else if(e.key==='ArrowDown'){ e.preventDefault(); setSheet(sheet==='full'?'half':'min',null,true); } };
-  let T=null;                                   // touch that started on the sheet body
+  // A touch that starts on the sheet body is decided once, then locked for the whole gesture:
+  //  - content that fits (nothing to scroll): the body drags the sheet either way
+  //  - content that scrolls: it scrolls, except a pull-down that began at the very top, which collapses the sheet
+  // The handle row always drags. Expanding a scrolling sheet is done from the handle.
+  let T=null;
   build.addEventListener('touchstart',e=>{
     if(!SHEETMQ.matches||e.touches.length!==1||e.target.closest('.grip,.mvbox,.sgrab')){ T=null; return; }
-    T={y:e.touches[0].clientY,t:e.timeStamp,mode:0}; },{passive:true});
+    T={y:e.touches[0].clientY,t:e.timeStamp,mode:0,
+       fits:build.scrollHeight<=build.clientHeight+1, top:build.scrollTop<=0}; },{passive:true});
   build.addEventListener('touchmove',e=>{ if(!T||T.mode===2) return;
     const y=e.touches[0].clientY, dy=y-T.y;
     if(T.mode===0){ if(Math.abs(dy)<8) return;
-      if((dy<0&&sheet!=='full')||(dy>0&&build.scrollTop<=0)){ T.mode=1; dStart(T.y,T.t); } else { T.mode=2; return; } }
+      if(T.fits||(T.top&&dy>0)){ T.mode=1; dStart(T.y,T.t); } else { T.mode=2; return; } }
     e.preventDefault(); dMove(y,e.timeStamp); },{passive:false});
   const tend=()=>{ if(T&&T.mode===1) dEnd(); T=null; };
   build.addEventListener('touchend',tend); build.addEventListener('touchcancel',tend);
