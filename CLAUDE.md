@@ -33,6 +33,28 @@ Before any push, confirm the generator still emits:
 - **AO3 wraps bare inline content in `<p>`** and its base sheet gives those
   `1.286em` margins. Rows are emitted as `<p>` with `margin: 0` on purpose.
 
+## New UI must match the existing components
+Any new control, panel or indicator has to look like it was always part of the site.
+Before writing CSS, look at what exists (`.hbtn`, `.skin`, `.msg .side`, `.copy button`,
+the inputs in `.msg`, the dialog and menu at the end of `style.css`) and reuse it.
+
+- **Reuse before inventing.** Use an existing class if one fits. If not, copy the
+  recipe: `1px solid var(--line)` border, `6px` radius, `var(--field)` background,
+  `var(--ink)` text, `font:inherit` at 11.5–12.5px, `4–7px` padding.
+- **States are the same everywhere.** Hover = `border-color` and `color` go to
+  `var(--accent)`. Selected = `var(--accent)` background with `var(--on-accent)` text.
+  Disabled = `opacity:.3`, no hover. Keep a visible keyboard focus.
+- **Colours only from the variables** in `:root` / `[data-theme=dark]`. No hard-coded
+  hex in site chrome. If a new colour is truly needed, add a variable in both themes.
+- **No new visual language.** No heavy shadows, pill shapes, gradients or floating
+  widgets unless an existing component already does that. Keep spacing on the current
+  5–8px rhythm. Small, flat, bordered.
+- **Place it where its neighbours are** (header row, panel header, `.copy` bar)
+  rather than floating over the preview.
+- **Check it in a screenshot, in light *and* dark**, next to the existing controls.
+  If it looks out of place, it is. This has been wrong several times.
+- This is for the site UI only. The generated chat mockups follow the AO3 rules above.
+
 ## Verifying
 Don't assert that a change works — check it. Parse `app.js` and the small inline script in `index.html`, re-run the
 allowlist check on the generated CSS, and confirm no editor artifacts leak
