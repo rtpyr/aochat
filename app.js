@@ -364,7 +364,15 @@ function drawSkins(){
    The chat shows the time as "h:mm AM/PM"; the full value is kept as m.at. */
 const tpop=document.createElement('div'); tpop.className='pmenu tpop'; tpop.hidden=true;
 tpop.setAttribute('role','dialog'); tpop.setAttribute('aria-label','Date and time');
-tpop.innerHTML='<input type="datetime-local" id="tpi" min="1900-01-01T00:00" max="9999-12-31T23:59" aria-label="Date and time"><button id="tpd" type="button">Done</button>';
+tpop.innerHTML='<div class="trow"><span class="tseg" id="tseg" role="group" aria-label="Date and time">'
+  +'<span class="sg" data-seg="mo" role="spinbutton" tabindex="0" aria-label="Month"></span><i>/</i>'
+  +'<span class="sg" data-seg="d" role="spinbutton" tabindex="0" aria-label="Day"></span><i>/</i>'
+  +'<span class="sg" data-seg="y" role="spinbutton" tabindex="0" aria-label="Year"></span><i>,&nbsp;</i>'
+  +'<span class="sg" data-seg="h" role="spinbutton" tabindex="0" aria-label="Hour"></span><i>:</i>'
+  +'<span class="sg" data-seg="mi" role="spinbutton" tabindex="0" aria-label="Minute"></span><i>&nbsp;</i>'
+  +'<span class="sg" data-seg="ap" role="spinbutton" tabindex="0" aria-label="AM or PM"></span></span><input type="hidden" id="tpi">'
+  +'<button type="button" id="tcal" aria-expanded="false" aria-label="Open calendar" title="Calendar"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5"/><path d="M1.5 5.5h11M4.5 1v3M9.5 1v3"/></svg></button>'
+  +'<button type="button" id="tpd">Done</button></div><div class="cal" id="cal" hidden></div>';
 document.body.appendChild(tpop);
 let tbtn=null;
 const pad=n=>String(n).padStart(2,'0');
@@ -379,20 +387,117 @@ function timeValue(m){
   if(ap==='p'&&h<12) h+=12; if(ap==='a'&&h===12) h=0;
   return day+'T'+pad(h)+':'+t[2];
 }
-function closeTime(){ tpop.hidden=true; if(tbtn){ tbtn.setAttribute('aria-expanded','false'); tbtn=null; } }
+/* Calendar + time lists, drawn here (not the browser's popup) so they use the
+   site's own colours and work the same in every browser. */
+/* Segmented date/time field. The highlighted part is the one you are editing:
+   type digits, use Up/Down to change it, Left/Right (or Tab) to move. */
+const tseg=tpop.querySelector('#tseg');
+const dim=(y,m)=>new Date(y,m,0).getDate();
+function updateSeg(){
+  const p=parseAt(tpop.querySelector('#tpi').value); if(!p) return;
+  const v={mo:pad(p.mo),d:pad(p.d),y:String(p.y).padStart(4,'0'),h:pad(p.h%12||12),mi:pad(p.mi),ap:p.h<12?'AM':'PM'};
+  tseg.querySelectorAll('.sg').forEach(e=>{ if(e!==document.activeElement||!segBuf) e.textContent=v[e.dataset.seg]; });
+}
+let segBuf='';
+tseg.addEventListener('focusin',e=>{ if(!e.target.dataset.seg) return; segBuf=''; updateSeg(); });
+tseg.addEventListener('click',e=>{ const g=e.target.closest('.sg'); if(g) g.focus(); });
+tseg.addEventListener('keydown',e=>{
+  const el=e.target.closest('.sg'); if(!el) return;
+  const k=el.dataset.seg, segs=[...tseg.querySelectorAll('.sg')], i=segs.indexOf(el);
+  const inp=tpop.querySelector('#tpi'), p=parseAt(inp.value); if(!p) return;
+  const go=n=>{ const t=segs[i+n]; if(t){ t.focus(); } };
+  const clamp=q=>{ q.d=Math.min(q.d,dim(q.y,q.mo)); return q; };
+  const h12=p.h%12||12, pm=p.h>=12;
+  if(e.key==='ArrowRight'){ e.preventDefault(); go(1); return; }
+  if(e.key==='ArrowLeft'){ e.preventDefault(); go(-1); return; }
+  if(e.key==='ArrowUp'||e.key==='ArrowDown'){ e.preventDefault(); segBuf='';
+    const d=e.key==='ArrowUp'?1:-1;
+    if(k==='mo') p.mo=(p.mo-1+d+12)%12+1;
+    else if(k==='d') p.d=(p.d-1+d+dim(p.y,p.mo))%dim(p.y,p.mo)+1;
+    else if(k==='y') p.y=Math.min(9999,Math.max(1900,p.y+d));
+    else if(k==='h') p.h=((h12-1+d+12)%12+1)%12+(pm?12:0);
+    else if(k==='mi') p.mi=(p.mi+d+60)%60;
+    else p.h=(p.h+12)%24;
+    setAt(clamp(p)); return; }
+  if(k==='ap'&&/^[ap]$/i.test(e.key)){ e.preventDefault(); const want=e.key.toLowerCase()==='p';
+    if(want!==pm) setAt(Object.assign(p,{h:(p.h+12)%24})); return; }
+  if(/^\d$/.test(e.key)){ e.preventDefault(); if(k==='ap') return;
+    if(k==='y'){ segBuf=(segBuf+e.key).slice(0,4); el.textContent=segBuf.padStart(4,'0');
+      if(segBuf.length===4&&+segBuf>=1900){ p.y=+segBuf; segBuf=''; setAt(clamp(p)); go(1); } return; }
+    const max={mo:12,d:dim(p.y,p.mo),h:12,mi:59}[k], min=(k==='mi')?0:1;
+    let b=segBuf+e.key, n=+b;
+    if(b.length>2||n>max){ b=e.key; n=+b; }                     // not a valid 2-digit value: start over with this digit
+    segBuf=b;
+    if(n>=min&&n<=max){
+      if(k==='mo') p.mo=n; else if(k==='d') p.d=n; else if(k==='mi') p.mi=n; else p.h=(n%12)+(pm?12:0);
+      setAt(clamp(p));
+    }
+    if(b.length===2||n*10>max){ segBuf=''; go(1); }
+    else el.textContent=pad(n);
+    return; }
+  if(e.key==='Enter'){ e.preventDefault(); tpop.querySelector('#tpd').click(); }
+});
+const tinp=tpop.querySelector('#tpi'), calEl=tpop.querySelector('#cal'), calBtn=tpop.querySelector('#tcal');
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+let cview=null;
+const parseAt=v=>{ const m=/^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)$/.exec(v||''); return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null; };
+const mkAt=p=>String(p.y).padStart(4,'0')+'-'+pad(p.mo)+'-'+pad(p.d)+'T'+pad(p.h)+':'+pad(p.mi);
+function setAt(p){ tinp.value=mkAt(p); if(tinp.oninput) tinp.oninput(); updateSeg(); drawCal(); }
+function drawCal(){
+  const p=parseAt(tinp.value); if(!p){ calEl.innerHTML=''; return; }
+  if(!cview) cview={y:p.y,m:p.mo-1};
+  const first=new Date(cview.y,cview.m,1), off=first.getDay(), now=new Date();
+  const same=(d,y,m,dd)=>d.getFullYear()===y&&d.getMonth()===m&&d.getDate()===dd;
+  let g='';
+  for(let i=0;i<42;i++){ const d=new Date(cview.y,cview.m,1-off+i);
+    const cls=['cd'+(d.getMonth()!==cview.m?' out':''),same(d,p.y,p.mo-1,p.d)?'sel':'',same(d,now.getFullYear(),now.getMonth(),now.getDate())?'today':''].join(' ');
+    g+=`<button type="button" class="${cls}" data-y="${d.getFullYear()}" data-m="${d.getMonth()}" data-d="${d.getDate()}"${same(d,p.y,p.mo-1,p.d)?' aria-pressed="true"':''}>${d.getDate()}</button>`; }
+  const h12=p.h%12||12, ap=p.h<12?'AM':'PM';
+  const col=(cls,items)=>`<div class="tc ${cls}">${items}</div>`;
+  const hrs=col('th',Array.from({length:12},(_,i)=>i+1).map(h=>`<button type="button" class="ti${h===h12?' sel':''}" data-h="${h}">${pad(h)}</button>`).join(''));
+  const mins=col('tm2',Array.from({length:60},(_,i)=>i).map(m=>`<button type="button" class="ti${m===p.mi?' sel':''}" data-mi="${m}">${pad(m)}</button>`).join(''));
+  const aps=col('ta',['AM','PM'].map(a=>`<button type="button" class="ti${a===ap?' sel':''}" data-ap="${a}">${a}</button>`).join(''));
+  calEl.innerHTML=`<div class="cdate"><div class="chead"><button type="button" class="cn" data-n="-1" aria-label="Previous month">&lsaquo;</button>
+    <span class="cm">${MONTHS[cview.m]} ${cview.y}</span><button type="button" class="cn" data-n="1" aria-label="Next month">&rsaquo;</button></div>
+    <div class="cwk">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(x=>'<span>'+x+'</span>').join('')}</div>
+    <div class="cgrid">${g}</div><div class="cfoot"><button type="button" class="ctoday">Today</button></div></div>
+    <div class="ctime">${hrs}${mins}${aps}</div>`;
+  calEl.querySelectorAll('.tc').forEach(c=>{ const s=c.querySelector('.sel'); if(s) c.scrollTop=s.offsetTop-c.clientHeight/2+s.offsetHeight/2; });
+}
+calEl.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return; const p=parseAt(tinp.value); if(!p) return;
+  if(b.dataset.n){ const d=new Date(cview.y,cview.m+ +b.dataset.n,1); cview={y:d.getFullYear(),m:d.getMonth()}; drawCal(); return; }
+  if(b.classList.contains('ctoday')){ const n=new Date(); cview={y:n.getFullYear(),m:n.getMonth()}; setAt(Object.assign(p,{y:n.getFullYear(),mo:n.getMonth()+1,d:n.getDate()})); return; }
+  if(b.dataset.d){ const y=+b.dataset.y,m=+b.dataset.m; cview={y,m}; setAt(Object.assign(p,{y,mo:m+1,d:+b.dataset.d})); return; }
+  const pm=p.h>=12;
+  if(b.dataset.h){ p.h=(+b.dataset.h%12)+(pm?12:0); setAt(p); }
+  else if(b.dataset.mi){ p.mi=+b.dataset.mi; setAt(p); }
+  else if(b.dataset.ap){ p.h=(p.h%12)+(b.dataset.ap==='PM'?12:0); setAt(p); }
+});
+calEl.addEventListener('keydown',e=>{            // arrow keys move between days
+  const b=e.target.closest('.cd'); if(!b) return;
+  const step={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[e.key]; if(!step) return;
+  e.preventDefault(); const p=parseAt(tinp.value); if(!p) return;
+  const d=new Date(+b.dataset.y,+b.dataset.m,+b.dataset.d+step);
+  cview={y:d.getFullYear(),m:d.getMonth()}; setAt(Object.assign(p,{y:d.getFullYear(),mo:d.getMonth()+1,d:d.getDate()}));
+  const n=calEl.querySelector('.cd.sel'); if(n) n.focus();
+});
+function showCal(on){ calEl.hidden=!on; calBtn.setAttribute('aria-expanded',String(on)); if(on){ cview=null; drawCal(); }
+  tpop.style.left=Math.max(8,Math.min(parseFloat(tpop.style.left)||8,innerWidth-tpop.offsetWidth-8))+'px'; }
+calBtn.onclick=()=>showCal(calEl.hidden);
+function closeTime(){ tpop.hidden=true; showCal(false); if(tbtn){ tbtn.setAttribute('aria-expanded','false'); tbtn=null; } }
 function openTime(b){
   if(tbtn===b){ closeTime(); return; }
-  closeTime(); closeWho(); tbtn=b; const i=+b.dataset.i, inp=tpop.querySelector('#tpi');
-  inp.value=timeValue(st.msgs[i]); b.setAttribute('aria-expanded','true');
+  closeTime(); closeWho(); tbtn=b; const i=+b.dataset.i, inp=tinp;
+  inp.value=timeValue(st.msgs[i]); updateSeg(); b.setAttribute('aria-expanded','true');
   inp.oninput=()=>{ if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(inp.value)) return;   // cleared, half-typed or odd year: wait
     const m=st.msgs[i]; m.at=inp.value; m.time=fmtTime(inp.value);
     b.innerHTML=esc(m.time); render(); };
-  inp.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); const bb=tbtn; closeTime(); if(bb) bb.focus(); } };
   const r=b.getBoundingClientRect();
   tpop.hidden=false;
   tpop.style.top=(r.bottom+window.scrollY+4)+'px';
   tpop.style.left=Math.max(8,Math.min(r.left,innerWidth-tpop.offsetWidth-8))+'px';
-  inp.focus();
+  tseg.querySelector('.sg').focus();
 }
 tpop.querySelector('#tpd').onclick=()=>{ const b=tbtn; closeTime(); if(b) b.focus(); };
 document.addEventListener('pointerdown',e=>{ if(!tpop.hidden&&!tpop.contains(e.target)&&!(tbtn&&tbtn.contains(e.target))) closeTime(); });
