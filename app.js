@@ -361,22 +361,44 @@ function drawSkins(){
 }
 function drawMsgs(){
   $('#msgs').innerHTML=st.msgs.map((m,i)=>`
-    <div class="msg">
-      <div class="top">
-        <button class="side${m.from==='them'?' on':''}" data-i="${i}" data-s="them">Them</button>
-        <button class="side${m.from==='me'?' on':''}" data-i="${i}" data-s="me">Me</button>
-        <button class="mv" data-i="${i}" data-d="-1" aria-label="Move message up" title="Move up"${i===0?' disabled':''}>&uarr;</button>
-        <button class="mv" data-i="${i}" data-d="1" aria-label="Move message down" title="Move down"${i===st.msgs.length-1?' disabled':''}>&darr;</button>
-        <input class="tm" data-i="${i}" value="${String(m.time).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">
-        <button class="rm" data-i="${i}">&times;</button>
+    <div class="msg" data-i="${i}">
+      <div class="mvbox" role="group" aria-label="Reorder message ${i+1}">
+        <button class="mv up" data-i="${i}" data-d="-1" aria-label="Move message up" title="Move up"${i===0?' disabled':''}><span class="chev"></span></button>
+        <button class="grip" data-i="${i}" draggable="true" aria-label="Drag to reorder" title="Drag to reorder"><span class="dots"></span></button>
+        <button class="mv dn" data-i="${i}" data-d="1" aria-label="Move message down" title="Move down"${i===st.msgs.length-1?' disabled':''}><span class="chev"></span></button>
       </div>
-      <textarea data-i="${i}">${m.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
+      <div class="mbody">
+        <div class="top">
+          <button class="side${m.from==='them'?' on':''}" data-i="${i}" data-s="them">Them</button>
+          <button class="side${m.from==='me'?' on':''}" data-i="${i}" data-s="me">Me</button>
+          <input class="tm" data-i="${i}" value="${String(m.time).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">
+          <button class="rm" data-i="${i}">&times;</button>
+        </div>
+        <textarea data-i="${i}">${m.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
+      </div>
     </div>`).join('');
   const box=$('#msgs');
+  const move=(i,j)=>{ if(i===j||j<0||j>=st.msgs.length) return;
+    const [t]=st.msgs.splice(i,1); st.msgs.splice(j,0,t); drawMsgs(); render(); };
   box.querySelectorAll('.side').forEach(b=>b.onclick=()=>{st.msgs[+b.dataset.i].from=b.dataset.s;drawMsgs();render();});
-  box.querySelectorAll('.mv').forEach(b=>b.onclick=()=>{
-    const i=+b.dataset.i,j=i+ +b.dataset.d; if(j<0||j>=st.msgs.length) return;
-    const t=st.msgs[i]; st.msgs[i]=st.msgs[j]; st.msgs[j]=t; drawMsgs(); render();});
+  box.querySelectorAll('.mv').forEach(b=>b.onclick=()=>move(+b.dataset.i,+b.dataset.i+ +b.dataset.d));
+  // Drag the grip to reorder. The whole card is the drop target.
+  let from=-1;
+  box.querySelectorAll('.grip').forEach(g=>{
+    g.ondragstart=e=>{ from=+g.dataset.i; e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/plain',String(from));
+      const c=g.closest('.msg'); e.dataTransfer.setDragImage(c,12,12); c.classList.add('drag'); };
+    g.ondragend=()=>{ from=-1; box.querySelectorAll('.msg').forEach(c=>c.classList.remove('drag','over')); };
+    // Keyboard: arrows on the grip move the message too.
+    g.onkeydown=e=>{ const d=e.key==='ArrowUp'?-1:e.key==='ArrowDown'?1:0; if(!d) return;
+      e.preventDefault(); const i=+g.dataset.i; move(i,i+d);
+      const n=box.querySelector('.grip[data-i="'+(i+d)+'"]'); if(n) n.focus(); };
+  });
+  box.querySelectorAll('.msg').forEach(c=>{
+    c.ondragover=e=>{ if(from<0) return; e.preventDefault(); e.dataTransfer.dropEffect='move';
+      box.querySelectorAll('.msg').forEach(x=>x.classList.toggle('over',x===c&&+c.dataset.i!==from)); };
+    c.ondrop=e=>{ if(from<0) return; e.preventDefault(); const f=from; from=-1; move(f,+c.dataset.i); };
+  });
   box.querySelectorAll('.rm').forEach(b=>b.onclick=()=>{st.msgs.splice(+b.dataset.i,1);drawMsgs();render();});
   box.querySelectorAll('textarea').forEach(t=>t.oninput=()=>{st.msgs[+t.dataset.i].text=t.value;render();});
   box.querySelectorAll('.tm').forEach(t=>t.oninput=()=>{st.msgs[+t.dataset.i].time=t.value;render();});
