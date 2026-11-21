@@ -622,10 +622,11 @@ var b=document.querySelectorAll('.'+P+'-bub');
 for(var i=0;i<b.length;i++)bind(wrap(b[i]),'msg',i);
 bind(wrap(document.querySelector('.'+P+'-nm')),'name',-1);
 bind(wrap(document.querySelector('.'+P+'-on')),'status',-1);
-parent.postMessage({ao3size:1,h:document.documentElement.scrollHeight},'*');})();`;
+var ph=document.querySelector('.'+P+'-phone'),pr=ph&&ph.getBoundingClientRect();
+parent.postMessage({ao3size:1,h:pr?Math.ceil(pr.bottom+(window.scrollY||0)):document.documentElement.scrollHeight,w:pr?Math.ceil(pr.width):0},'*');})();`;
 
 window.addEventListener('message',function(e){
-  const m=e.data; if(m&&m.ao3size){ pvH=m.h; return; }
+  const m=e.data; if(m&&m.ao3size){ pvH=m.h; pvW=m.w; fitPreview(); return; }
   if(!m||!m.ao3edit) return;
   if(m.kind==='msg'){
     if(!st.msgs[m.idx]) return;
@@ -662,7 +663,7 @@ $('#addm').onclick=()=>{st.msgs.push({from:'them',text:'new message',time:'9:43 
 /* ---- preview zoom (site chrome only; never part of the export) ------
    Scales the iframe with a transform and enlarges its layout box by 1/z so it
    still fills the pane. -------------------------------------------------- */
-let zoom=1,pvH=0;
+let zoom=1,pvH=0,pvW=0,autoFit=true;
 const ZMIN=.25,ZMAX=2;
 function setZoom(z){
   zoom=Math.min(ZMAX,Math.max(ZMIN,Math.round(z*100)/100));
@@ -671,9 +672,9 @@ function setZoom(z){
   $('#zout').disabled=zoom<=ZMIN; $('#zin').disabled=zoom>=ZMAX;
 }
 const zstep=z=>z>=1?.25:.1;
-$('#zout').onclick=()=>setZoom(zoom-zstep(zoom-.001));
-$('#zin').onclick=()=>setZoom(zoom+zstep(zoom));
-$('#zval').onclick=()=>setZoom(1);
+$('#zout').onclick=()=>{ autoFit=false; setZoom(zoom-zstep(zoom-.001)); };
+$('#zin').onclick=()=>{ autoFit=false; setZoom(zoom+zstep(zoom)); };
+$('#zval').onclick=()=>{ autoFit=false; setZoom(1); };
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
@@ -953,12 +954,71 @@ $('#nexp').onclick=()=>exportCurrent();
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') flush(); });
 addEventListener('pagehide',()=>{ flush(); });
 
-/* ---- phone layout: one pane at a time, switched from the bottom bar ---- */
+/* ---- phone layout ------------------------------------------------------
+   Portrait: the preview fills the screen and the editor is a bottom sheet that
+   snaps between collapsed / half / full, so the preview stays visible while
+   you edit. Landscape or wider: panes are switched from the bottom bar. ---- */
+const SHEETMQ=matchMedia('(max-width:900px) and (orientation:portrait)');
+const mainEl=document.querySelector('main'), sgrab=$('#sgrab');
+let sheet='half';
+const sheetPx=()=>{ const H=mainEl.clientHeight; return {min:30, half:Math.round(H*.46), full:Math.max(120,H-56)}; };
+function paintTabs(){
+  const code=document.body.dataset.view==='code';
+  const cur=code?'code':(SHEETMQ.matches?(sheet==='min'?'preview':'edit'):document.body.dataset.view);
+  document.querySelectorAll('#mtabs button').forEach(x=>{ const on=x.dataset.v===cur; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); });
+}
+function setSheet(name,px,animate){
+  sheet=name; document.body.dataset.sheet=name;
+  mainEl.classList.toggle('snap',!!animate);
+  mainEl.style.setProperty('--sheet-h',(px==null?sheetPx()[name]:px)+'px');
+  paintTabs();
+}
+function fitPreview(){
+  if(!SHEETMQ.matches||!autoFit||!pvH||!pvW) return;
+  const b=$('#pvbox'); if(!b.clientHeight) return;
+  setZoom(Math.min(1,(b.clientHeight-16)/pvH,(b.clientWidth-16)/pvW));
+}
 document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
-  document.body.dataset.view=b.dataset.v;
-  document.querySelectorAll('#mtabs button').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); });
-  closeMenu(); closeWho(); closeTime();
+  const v=b.dataset.v;
+  if(SHEETMQ.matches&&v!=='code'){
+    document.body.dataset.view='edit';
+    setSheet(v==='preview'?'min':(sheet==='min'?'half':sheet),null,true);
+  } else {
+    document.body.dataset.view=v==='preview'&&SHEETMQ.matches?'edit':v; paintTabs();
+  }
+  autoFit=true; closeMenu(); closeWho(); closeTime();
 });
+// drag the handle; a plain tap toggles half / full
+(function(){
+  let sy=0,sh=0,moved=false,last=[],id=null;
+  sgrab.onpointerdown=e=>{ if(!SHEETMQ.matches||e.button>0) return;
+    id=e.pointerId; sgrab.setPointerCapture(id); sy=e.clientY; sh=$('#build').offsetHeight; moved=false; last=[[e.timeStamp,e.clientY]];
+    mainEl.classList.remove('snap'); e.preventDefault(); };
+  sgrab.onpointermove=e=>{ if(id!==e.pointerId) return;
+    if(Math.abs(e.clientY-sy)>5) moved=true; if(!moved) return;
+    const p=sheetPx(); const h=Math.min(p.full,Math.max(p.min,sh-(e.clientY-sy)));
+    mainEl.style.setProperty('--sheet-h',h+'px'); last.push([e.timeStamp,e.clientY]); if(last.length>5) last.shift();
+    autoFit=true; fitPreview(); };
+  const end=e=>{ if(id!==e.pointerId) return; id=null;
+    const p=sheetPx();
+    if(!moved){ setSheet(sheet==='half'?'full':sheet==='full'?'half':'half',null,true); return; }
+    const h=$('#build').offsetHeight; let v=0;           // px per ms, negative = moving up
+    if(last.length>1){ const a=last[0],b=last[last.length-1]; v=(b[1]-a[1])/Math.max(1,b[0]-a[0]); }
+    const want=h-v*160;
+    const name=['min','half','full'].reduce((best,k)=>Math.abs(p[k]-want)<Math.abs(p[best]-want)?k:best,'half');
+    document.body.dataset.view='edit'; setSheet(name,null,true); };
+  sgrab.onpointerup=end; sgrab.onpointercancel=end;
+  sgrab.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setSheet(sheet==='full'?'half':'full',null,true); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); setSheet(sheet==='min'?'half':'full',null,true); }
+    else if(e.key==='ArrowDown'){ e.preventDefault(); setSheet(sheet==='full'?'half':'min',null,true); } };
+})();
+// border-box, because the sheet changes main's padding (its content box) while dragging
+let lastMainH=0;
+new ResizeObserver(()=>{ const H=mainEl.offsetHeight;
+  if(SHEETMQ.matches&&H!==lastMainH&&!mainEl.matches(':active')){ setSheet(sheet,null,false); } lastMainH=H; fitPreview(); }).observe(mainEl,{box:'border-box'});
+new ResizeObserver(()=>fitPreview()).observe($('#pvbox'));
+SHEETMQ.addEventListener('change',()=>{ document.body.dataset.view='edit'; autoFit=true; if(SHEETMQ.matches){ setSheet('half',null,false); } else { mainEl.style.removeProperty('--sheet-h'); delete document.body.dataset.sheet; setZoom(1); paintTabs(); } });
+if(SHEETMQ.matches) setSheet('half',null,false);
 
 /* ---- start up ---- */
 (async function init(){
