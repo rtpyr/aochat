@@ -1061,21 +1061,22 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   ];
   const rails=[$('#rail'),$('#railm')], logo=$('#logo'), build=$('#build');
   rails.forEach(r=>{ r.innerHTML=ITEMS.map(([k,l,i])=>`<button class="rb" data-go="${k}">${i}<span>${l}</span></button>`).join(''); });
-  const KEY='aochat-rail'; let cur='skin';
-  // Rail closed: every section is shown in one scroll, as before. Rail open: one section at a time.
+  const KEY='aochat-rail', SKEY='aochat-sec'; let cur=null;
+  try{ const v=localStorage.getItem(SKEY); if(ITEMS.some(i=>i[0]===v)) cur=v; }catch(e){}
+  // The chosen section sticks, whether or not the rail is showing. Until one is chosen, every section is listed.
   function show(k){
-    cur=k;
+    cur=k; try{ localStorage.setItem(SKEY,k); }catch(e){}
     rails.forEach(r=>r.querySelectorAll('.rb').forEach(b=>b.setAttribute('aria-current',String(b.dataset.go===k))));
+    build.classList.add('tabbed');
     build.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.dataset.sec===k));
   }
   function setOpen(on,persist){
-    rails.forEach(r=>r.classList.toggle('open',on)); build.classList.toggle('tabbed',on); logo.setAttribute('aria-expanded',String(on));
-    if(on) show(cur);
+    rails.forEach(r=>r.classList.toggle('open',on)); logo.setAttribute('aria-expanded',String(on));
     if(persist) try{ localStorage.setItem(KEY,on?'1':'0'); }catch(e){}
   }
   logo.onclick=()=>setOpen(!$('#rail').classList.contains('open'),true);
   let on=false; try{ on=localStorage.getItem(KEY)==='1'; }catch(e){}
-  setOpen(on,false);
+  setOpen(on,false); if(cur) show(cur);
   document.addEventListener('click',e=>{
     const b=e.target.closest('.rb'); if(!b) return;
     if(SHEETMQ.matches&&sheet==='min'){ document.body.dataset.view='edit'; setSheet('half',null,true); }
