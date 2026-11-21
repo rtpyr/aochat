@@ -169,3 +169,6 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .ti{min-width:38px;height:26px;flex:0 0 auto}
 .tpop button{width:auto;text-align:center}
 .tpop .cal .ti{width:100%}
+/* the preview header and the output tabs share one height so the line under them runs straight across */
+.head,.tabs{height:44px;box-sizing:border-box;flex:0 0 44px}
+.tabs{align-items:flex-end}
