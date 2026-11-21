@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>aochat</title>
-<link rel="stylesheet" href="style.css?v=a0ba98d5">
+<link rel="stylesheet" href="style.css?v=da91f7f0">
 <script>
 /* site theme only; the phone preview is never themed */
 (function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
@@ -33,7 +33,16 @@
     <div class="head"><span>Preview</span><span style="flex:1"></span>
       <button class="hbtn" id="undo" title="Undo (Ctrl/Cmd+Z)" disabled>↶</button>
       <button class="hbtn" id="redo" title="Redo (Ctrl/Cmd+Shift+Z)" disabled>↷</button></div>
-    <iframe id="pv" sandbox="allow-scripts" title="AO3 preview"></iframe>
+    <div class="pvbox" id="pvbox">
+      <iframe id="pv" sandbox="allow-scripts" title="AO3 preview"></iframe>
+      <div class="zoom" role="group" aria-label="Zoom">
+        <button id="zout" aria-label="Zoom out" title="Zoom out">&minus;</button>
+        <button id="zval" class="zv" aria-label="Reset zoom to 100%" title="Reset to 100%">100%</button>
+        <button id="zin" aria-label="Zoom in" title="Zoom in">+</button>
+        <span class="zsep"></span>
+        <button id="zfit" aria-label="Fit to preview" title="Fit to preview">&#x2922;</button>
+      </div>
+    </div>
     <div class="lint" id="lint"></div>
   </div>
 
@@ -51,6 +60,6 @@
   </div>
 </main>
 
-<script src="app.js?v=a0ba98d5"></script>
+<script src="app.js?v=da91f7f0"></script>
 </body>
 </html>

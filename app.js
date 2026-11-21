@@ -412,10 +412,12 @@ function bind(el,kind,idx){if(!el)return;
 var b=document.querySelectorAll('.'+P+'-bub');
 for(var i=0;i<b.length;i++)bind(wrap(b[i]),'msg',i);
 bind(wrap(document.querySelector('.'+P+'-nm')),'name',-1);
-bind(wrap(document.querySelector('.'+P+'-on')),'status',-1);})();`;
+bind(wrap(document.querySelector('.'+P+'-on')),'status',-1);
+parent.postMessage({ao3size:1,h:document.documentElement.scrollHeight},'*');})();`;
 
 window.addEventListener('message',function(e){
-  const m=e.data; if(!m||!m.ao3edit) return;
+  const m=e.data; if(m&&m.ao3size){ pvH=m.h; return; }
+  if(!m||!m.ao3edit) return;
   if(m.kind==='msg'){
     if(!st.msgs[m.idx]) return;
     st.msgs[m.idx].text=m.value;
@@ -448,6 +450,22 @@ function render(){
   snapshot();
 }
 $('#addm').onclick=()=>{st.msgs.push({from:'them',text:'new message',time:'9:43'});drawMsgs();render();};
+/* ---- preview zoom (site chrome only; never part of the export) ------
+   Scales the iframe with a transform and enlarges its layout box by 1/z so it
+   still fills the pane. -------------------------------------------------- */
+let zoom=1,pvH=0;
+const ZMIN=.25,ZMAX=2;
+function setZoom(z){
+  zoom=Math.min(ZMAX,Math.max(ZMIN,Math.round(z*100)/100));
+  const f=$('#pv').style; f.width=100/zoom+'%'; f.height=100/zoom+'%'; f.transform='scale('+zoom+')';
+  $('#zval').textContent=Math.round(zoom*100)+'%';
+  $('#zout').disabled=zoom<=ZMIN; $('#zin').disabled=zoom>=ZMAX;
+}
+const zstep=z=>z>=1?.25:.1;
+$('#zout').onclick=()=>setZoom(zoom-zstep(zoom-.001));
+$('#zin').onclick=()=>setZoom(zoom+zstep(zoom));
+$('#zval').onclick=()=>setZoom(1);
+$('#zfit').onclick=()=>{ const h=$('#pvbox').clientHeight; setZoom(pvH?Math.min(1,(h-24)/pvH):1); };
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
