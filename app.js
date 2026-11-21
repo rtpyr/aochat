@@ -372,7 +372,7 @@ tpop.innerHTML='<div class="trow"><span class="tseg" id="tseg" role="group" aria
   +'<span class="sg" data-seg="mi" role="spinbutton" tabindex="0" aria-label="Minute"></span><i>&nbsp;</i>'
   +'<span class="sg" data-seg="ap" role="spinbutton" tabindex="0" aria-label="AM or PM"></span></span><input type="hidden" id="tpi">'
   +'<button type="button" id="tcal" aria-expanded="false" aria-label="Open calendar" title="Calendar"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5"/><path d="M1.5 5.5h11M4.5 1v3M9.5 1v3"/></svg></button>'
-  +'<button type="button" id="tpd">Done</button></div><div class="cal" id="cal" hidden></div>';
+  +'<button type="button" id="tpd" aria-label="Done" title="Done"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg></button></div><div class="cal" id="cal" hidden></div>';
 document.body.appendChild(tpop);
 let tbtn=null;
 const pad=n=>String(n).padStart(2,'0');
