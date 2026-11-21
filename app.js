@@ -1126,7 +1126,7 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   };
   function syncTog(){ const t=$('#rtog'), o=$('#rail').classList.contains('open'); if(t){ t.setAttribute('aria-expanded',String(o)); t.title=o?'Collapse sidebar':'Expand sidebar'; } }
   function setOpen(on,persist){
-    rails.forEach(r=>r.classList.toggle('open',on)); logo.setAttribute('aria-expanded',String(on)); syncTog();
+    rails.forEach((r,i)=>r.classList.toggle('open',i===1||on)); logo.setAttribute('aria-expanded',String(on)); syncTog();
     if(persist) try{ localStorage.setItem(KEY,on?'1':'0'); }catch(e){}
   }
   logo.onclick=()=>setOpen(!$('#rail').classList.contains('open'),true);

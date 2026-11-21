@@ -22,7 +22,7 @@
 input[type=range]{accent-color:var(--accent)}
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100vh;overflow:hidden;font-size:13px}
 header{flex-wrap:wrap;padding:5px 14px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;align-items:center;gap:10px;flex:0 0 auto}
-header h1{font-size:14px;margin:0;font-weight:600}
+header h1{font-size:14px;margin:0;font-weight:600;pointer-events:none;user-select:none}
 .sub{font-size:11.5px;color:var(--muted)}
 main{flex:1;display:flex;min-height:0}
 .col{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
@@ -340,7 +340,7 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .rail:not(.open) .rtog svg{transform:rotate(180deg)}
 .rail.open .rtog{justify-content:flex-start}
 .rail:not(.open) .rtog{justify-content:center}
-@media (min-width:901px),(orientation:landscape){ #logo{display:none} }
+#logo{display:none}
 /* Closed = icons only. */
 .rail:not(.open) .rb span{display:none}
 .rail:not(.open) .rb{justify-content:center;padding:9px 0}
@@ -398,7 +398,6 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   .rail-m .rb.child{flex:1 0 56px}
 }
 @media (prefers-reduced-motion:reduce){ .rail,.rail .rtog svg,.rail-m{transition:none!important} .rtog path{animation:none!important} }
-@media (max-width:430px){ header h1{display:none} }
 
 /* skin-specific options in the Skin section */
 .orow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;box-sizing:border-box;padding:6px 2px;color:var(--ink);font-size:12.5px}
