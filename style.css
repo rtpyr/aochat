@@ -52,6 +52,9 @@ input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);
 .pmenu.wmenu button{display:flex;justify-content:space-between;gap:12px}
 .wmenu .ck{color:var(--accent)}
 .msg .side.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.fld{display:block;width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);font:inherit;font-size:12.5px}
+.fld:hover,.fld:focus{border-color:var(--accent);outline:none}
+@media (pointer:coarse){ .fld{padding:10px 10px;font-size:14px} }
 .msg textarea{width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;background:var(--field);color:var(--ink);font:inherit;font-size:12px;resize:vertical;min-height:34px}
 .mvbox{flex:0 0 26px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:7px;background:var(--field);overflow:hidden}
 .mvbox button{border:0;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;min-height:22px}

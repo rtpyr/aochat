@@ -383,7 +383,7 @@ function drawSkins(){
 }
 var railSync=function(){};
 /* Which sidebar sections each skin offers. Add a key to SKSECS to change one skin's list. */
-const SKSECS={whatsapp:['skin','opts','msgs','device'],imessage:['skin','opts','msgs','device'],line:['skin','opts','msgs','device'],kakao:['skin','opts','msgs','device']};
+const SKSECS={whatsapp:['skin','opts','contact','msgs','device'],imessage:['skin','opts','contact','msgs','device'],line:['skin','opts','contact','msgs','device'],kakao:['skin','opts','contact','msgs','device']};
 /* Options that belong to the chosen skin; the list changes when the skin does. */
 function drawOpts(){
   const box=$('#skopts'), list=SKOPT[st.skin]||[], o=Object.assign({},OPTDEF,st.opt);
@@ -559,7 +559,11 @@ document.addEventListener('click',e=>{ if(!wmenu.hidden&&!wmenu.contains(e.targe
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!wmenu.hidden){ const b=wbtn; closeWho(); if(b) b.focus(); } });
 function refreshWho(){ document.querySelectorAll('.msg').forEach((c,i)=>{
   const n=c.querySelector('.who .wn'); if(n&&st.msgs[i]) n.textContent=st.msgs[i].from==='me'?'Me':st.name; }); }
+function drawContact(){ const n=$('#cname'), s=$('#cstat'); if(n&&n!==document.activeElement) n.value=st.name; if(s&&s!==document.activeElement) s.value=st.status; }
+$('#cname').oninput=e=>{ st.name=e.target.value; refreshWho(); render(); };
+$('#cstat').oninput=e=>{ st.status=e.target.value; render(); };
 function drawMsgs(){
+  drawContact();
   $('#msgs').innerHTML=st.msgs.map((m,i)=>`
     <div class="msg" data-i="${i}">
       <div class="mvbox" role="group" aria-label="Reorder message ${i+1}">
@@ -667,8 +671,8 @@ window.addEventListener('message',function(e){
     st.msgs[m.idx].text=m.value;
     const ta=document.querySelector('#msgs textarea[data-i="'+m.idx+'"]');
     if(ta) ta.value=m.value;
-  } else if(m.kind==='name'){ st.name=m.value; refreshWho(); }
-  else if(m.kind==='status'){ st.status=m.value; }
+  } else if(m.kind==='name'){ st.name=m.value; refreshWho(); drawContact(); }
+  else if(m.kind==='status'){ st.status=m.value; drawContact(); }
   // A message edit is already visible in the frame, so outputs are enough.
   // Name/status can also appear per row (KakaoTalk), so refresh once settled.
   if(m.done&&m.kind!=='msg') render(); else renderOut();
@@ -1093,6 +1097,7 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   const ITEMS=[
     ['skin','Skin',I('<path d="M9 2.8a6.2 6.2 0 100 12.4c1 0 1.5-.7 1.5-1.4 0-1-1-1.2-1-2.1 0-.8.6-1.3 1.5-1.3H13a2.2 2.2 0 002.2-2.2C15 5.3 12.4 2.8 9 2.8z"/><circle cx="5.8" cy="8.2" r=".7"/><circle cx="8.4" cy="5.7" r=".7"/><circle cx="11.7" cy="6.4" r=".7"/>')],
     ['opts','Options',I('<path d="M3 5h12M3 9h12M3 13h12"/><circle cx="6.5" cy="5" r="1.4"/><circle cx="11.5" cy="9" r="1.4"/><circle cx="7.5" cy="13" r="1.4"/>')],
+    ['contact','Contact',I('<circle cx="9" cy="6.5" r="2.7"/><path d="M3.5 15c.6-3 2.9-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/>')],
     ['msgs','Messages',I('<path d="M3 4.5A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5v6a1.5 1.5 0 01-1.5 1.5H8l-3 3v-3A1.5 1.5 0 013 10.5z"/>')],
     ['device','Device',I('<rect x="5" y="2.2" width="8" height="13.6" rx="1.8"/><path d="M8 13.3h2"/>')]
   ];
