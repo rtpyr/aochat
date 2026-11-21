@@ -1125,8 +1125,8 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
     if(persist) try{ localStorage.setItem(KEY,on?'1':'0'); }catch(e){}
   }
   logo.onclick=()=>setOpen(!$('#rail').classList.contains('open'),true);
-  let on=false; try{ on=localStorage.getItem(KEY)==='1'; }catch(e){}
-  setOpen(on,false); if(cur) show(cur);
+  let on=true; try{ const v=localStorage.getItem(KEY); if(v!==null) on=v==='1'; }catch(e){}
+  setOpen(on,false); show(cur||'skin');
   document.addEventListener('click',e=>{
     const b=e.target.closest('.rb'); if(!b) return;
     if(b.classList.contains('rtog')){ setOpen(!$('#rail').classList.contains('open'),true); return; }
