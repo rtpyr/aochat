@@ -276,19 +276,20 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 /* portrait phones: editor is a bottom sheet over a full-height preview */
 .sgrab{display:none}
 @media (max-width:900px) and (orientation:portrait){
-  main{padding-bottom:var(--sheet-h,30px)}
-  main.snap{transition:padding-bottom .2s ease}
-  main.snap #build{transition:height .2s ease}
+  main{padding-bottom:var(--sheet-h,48px)}
+  main.snap{transition:padding-bottom .28s cubic-bezier(.22,.8,.3,1)}
+  main.snap #build{transition:height .28s cubic-bezier(.22,.8,.3,1)}
   body[data-view=code] main{padding-bottom:0}
   body[data-view=edit] #mid{display:flex}
-  body[data-view=edit] #build{display:flex;position:absolute;left:0;right:0;bottom:0;width:auto;height:var(--sheet-h,30px);flex:none;box-sizing:border-box;z-index:15;border-top:1px solid var(--line);border-right:none;border-radius:14px 14px 0 0}
+  body[data-view=edit] #build{display:flex;position:absolute;left:0;right:0;bottom:0;width:auto;height:var(--sheet-h,48px);flex:none;box-sizing:border-box;z-index:15;border-top:1px solid var(--line);border-right:none;border-radius:14px 14px 0 0}
   body[data-view=code] #build{display:none}
   body[data-sheet=min] #build{overflow:hidden}
   body[data-sheet=min] #build>:not(.sgrab){visibility:hidden}
-  .sgrab{display:flex;justify-content:center;align-items:center;position:sticky;top:-12px;height:30px;margin:-12px -12px 2px;background:var(--panel);z-index:2;cursor:grab;touch-action:none;border-radius:14px 14px 0 0}
-  .sgrab span{width:38px;height:4px;border-radius:2px;background:var(--thumb)}
+  .sgrab{display:flex;justify-content:center;align-items:center;position:sticky;top:-12px;height:48px;flex:0 0 48px;margin:-12px -12px 0;background:var(--panel);z-index:2;cursor:grab;touch-action:none;border-radius:14px 14px 0 0}
+  .sgrab span{width:56px;height:6px;border-radius:3px;background:var(--thumb-hover)}
   .sgrab:hover span,.sgrab:focus-visible span{background:var(--accent)}
   .sgrab:focus-visible{outline:none}
   #msgs{padding-bottom:16px}
+  #build{overscroll-behavior:contain}
 }
 @media (prefers-reduced-motion:reduce){ main.snap,main.snap #build{transition:none!important} }

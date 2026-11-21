@@ -961,7 +961,7 @@ addEventListener('pagehide',()=>{ flush(); });
 const SHEETMQ=matchMedia('(max-width:900px) and (orientation:portrait)');
 const mainEl=document.querySelector('main'), sgrab=$('#sgrab');
 let sheet='half';
-const sheetPx=()=>{ const H=mainEl.clientHeight; return {min:30, half:Math.round(H*.46), full:Math.max(120,H-56)}; };
+const sheetPx=()=>{ const H=mainEl.clientHeight; return {min:48, half:Math.round(H*.46), full:Math.max(120,H-56)}; };
 function paintTabs(){
   const code=document.body.dataset.view==='code';
   const cur=code?'code':(SHEETMQ.matches?(sheet==='min'?'preview':'edit'):document.body.dataset.view);
@@ -985,29 +985,42 @@ document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{
   }
   closeMenu(); closeWho(); closeTime();
 });
-// drag the handle; a plain tap toggles half / full
+// Drag the sheet. The handle row always drags it; the sheet body also drags it
+// when pulling up on a partly open sheet, or pulling down from the top of the list.
+const D={sy:0,sh:0,moved:false,last:[]};
+const build=$('#build');
+function dStart(y,t){ D.sy=y; D.sh=build.offsetHeight; D.moved=false; D.last=[[t,y]]; mainEl.classList.remove('snap'); }
+function dMove(y,t){ if(Math.abs(y-D.sy)>3) D.moved=true; if(!D.moved) return;
+  const p=sheetPx(); const h=Math.min(p.full,Math.max(p.min,D.sh-(y-D.sy)));
+  mainEl.style.setProperty('--sheet-h',h+'px'); D.last.push([t,y]); if(D.last.length>6) D.last.shift(); }
+function dEnd(){ if(!D.moved) return false;
+  const p=sheetPx(), h=build.offsetHeight; let v=0;                       // px/ms, negative = up
+  if(D.last.length>1){ const a=D.last[0],b=D.last[D.last.length-1]; v=(b[1]-a[1])/Math.max(1,b[0]-a[0]); }
+  const want=h-v*220;                                                      // where it was heading
+  const name=['min','half','full'].reduce((best,k)=>Math.abs(p[k]-want)<Math.abs(p[best]-want)?k:best,'half');
+  document.body.dataset.view='edit'; setSheet(name,null,true); return true; }
 (function(){
-  let sy=0,sh=0,moved=false,last=[],id=null;
+  let id=null;
   sgrab.onpointerdown=e=>{ if(!SHEETMQ.matches||e.button>0) return;
-    id=e.pointerId; sgrab.setPointerCapture(id); sy=e.clientY; sh=$('#build').offsetHeight; moved=false; last=[[e.timeStamp,e.clientY]];
-    mainEl.classList.remove('snap'); e.preventDefault(); };
-  sgrab.onpointermove=e=>{ if(id!==e.pointerId) return;
-    if(Math.abs(e.clientY-sy)>5) moved=true; if(!moved) return;
-    const p=sheetPx(); const h=Math.min(p.full,Math.max(p.min,sh-(e.clientY-sy)));
-    mainEl.style.setProperty('--sheet-h',h+'px'); last.push([e.timeStamp,e.clientY]); if(last.length>5) last.shift();
-  };
+    id=e.pointerId; sgrab.setPointerCapture(id); dStart(e.clientY,e.timeStamp); e.preventDefault(); };
+  sgrab.onpointermove=e=>{ if(id===e.pointerId) dMove(e.clientY,e.timeStamp); };
   const end=e=>{ if(id!==e.pointerId) return; id=null;
-    const p=sheetPx();
-    if(!moved){ setSheet(sheet==='half'?'full':sheet==='full'?'half':'half',null,true); return; }
-    const h=$('#build').offsetHeight; let v=0;           // px per ms, negative = moving up
-    if(last.length>1){ const a=last[0],b=last[last.length-1]; v=(b[1]-a[1])/Math.max(1,b[0]-a[0]); }
-    const want=h-v*160;
-    const name=['min','half','full'].reduce((best,k)=>Math.abs(p[k]-want)<Math.abs(p[best]-want)?k:best,'half');
-    document.body.dataset.view='edit'; setSheet(name,null,true); };
+    if(!dEnd()) setSheet(sheet==='half'?'full':sheet==='full'?'half':'half',null,true); };
   sgrab.onpointerup=end; sgrab.onpointercancel=end;
   sgrab.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setSheet(sheet==='full'?'half':'full',null,true); }
     else if(e.key==='ArrowUp'){ e.preventDefault(); setSheet(sheet==='min'?'half':'full',null,true); }
     else if(e.key==='ArrowDown'){ e.preventDefault(); setSheet(sheet==='full'?'half':'min',null,true); } };
+  let T=null;                                   // touch that started on the sheet body
+  build.addEventListener('touchstart',e=>{
+    if(!SHEETMQ.matches||e.touches.length!==1||e.target.closest('.grip,.mvbox,.sgrab')){ T=null; return; }
+    T={y:e.touches[0].clientY,t:e.timeStamp,mode:0}; },{passive:true});
+  build.addEventListener('touchmove',e=>{ if(!T||T.mode===2) return;
+    const y=e.touches[0].clientY, dy=y-T.y;
+    if(T.mode===0){ if(Math.abs(dy)<8) return;
+      if((dy<0&&sheet!=='full')||(dy>0&&build.scrollTop<=0)){ T.mode=1; dStart(T.y,T.t); } else { T.mode=2; return; } }
+    e.preventDefault(); dMove(y,e.timeStamp); },{passive:false});
+  const tend=()=>{ if(T&&T.mode===1) dEnd(); T=null; };
+  build.addEventListener('touchend',tend); build.addEventListener('touchcancel',tend);
 })();
 // border-box, because the sheet changes main's padding (its content box) while dragging
 let lastMainH=0;
