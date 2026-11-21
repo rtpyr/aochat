@@ -1090,7 +1090,9 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   const rails=[$('#rail'),$('#railm')], logo=$('#logo'), build=$('#build');
   const avail=()=>{ const l=SKSECS[st.skin]; return ITEMS.filter(i=>!l||l.includes(i[0])); };
   function paintRail(){
-    rails.forEach(r=>{ r.innerHTML=avail().map(([k,l,i])=>`<button class="rb" data-go="${k}">${i}<span>${l}</span></button>`).join(''); });
+    const l=avail(), btn=([k,t,i],c)=>`<button class="rb ${c}" data-go="${k}">${i}<span>${t}</span>${c==='parent'?`<small>${esc(SKINS[st.skin].label)}</small>`:''}</button>`;
+    const html=btn(l[0],'parent')+`<div class="rkids">${l.slice(1).map(x=>btn(x,'child')).join('')}</div>`;
+    rails.forEach(r=>{ r.innerHTML=html; });
   }
   paintRail();
   const KEY='aochat-rail', SKEY='aochat-sec'; let cur=null;
@@ -1098,7 +1100,7 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   // The chosen section sticks, whether or not the rail is showing. Until one is chosen, every section is listed.
   function show(k){
     cur=k; try{ localStorage.setItem(SKEY,k); }catch(e){}
-    rails.forEach(r=>r.querySelectorAll('.rb').forEach(b=>b.setAttribute('aria-current',String(b.dataset.go===k))));
+    rails.forEach(r=>r.querySelectorAll('.rb').forEach(b=>{ b.setAttribute('aria-current',String(b.dataset.go===k)); b.classList.toggle('path',b.classList.contains('parent')&&k!=='skin'); }));
     build.classList.add('tabbed');
     build.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.dataset.sec===k));
   }
