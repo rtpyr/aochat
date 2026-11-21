@@ -41,6 +41,12 @@ input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);
 .mbody{flex:1;min-width:0}
 .msg .top{display:flex;gap:5px;align-items:center;margin-bottom:5px}
 .msg .side{flex:1;padding:3px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11px}
+.msg .who{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:3px 8px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11px;text-align:left}
+.msg .who:hover,.msg .who[aria-expanded=true]{border-color:var(--accent);color:var(--accent)}
+.msg .who .wn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.msg .who .wch{flex:0 0 auto;width:5px;height:5px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translate(-1px,-1px)}
+.pmenu.wmenu button{display:flex;justify-content:space-between;gap:12px}
+.wmenu .ck{color:var(--accent)}
 .msg .side.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .msg textarea{width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;background:var(--field);color:var(--ink);font:inherit;font-size:12px;resize:vertical;min-height:34px}
 .mvbox{flex:0 0 26px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:7px;background:var(--field);overflow:hidden}

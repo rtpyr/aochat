@@ -359,6 +359,28 @@ function drawSkins(){
     `<button class="skin${k===st.skin?' on':''}" data-k="${k}">${v.label}</button>`).join('');
   $('#skins').querySelectorAll('.skin').forEach(b=>b.onclick=()=>{st.skin=b.dataset.k;drawSkins();render();});
 }
+/* Speaker picker: a button showing who sent the message; click for the list. */
+const wmenu=document.createElement('div'); wmenu.className='pmenu wmenu'; wmenu.setAttribute('role','menu'); wmenu.hidden=true;
+document.body.appendChild(wmenu);
+let wbtn=null;
+function closeWho(){ wmenu.hidden=true; if(wbtn){ wbtn.setAttribute('aria-expanded','false'); wbtn=null; } }
+function openWho(b){
+  if(wbtn===b){ closeWho(); return; }
+  closeWho(); wbtn=b; const i=+b.dataset.i, cur=st.msgs[i].from;
+  wmenu.innerHTML=[['me','Me'],['them',st.name]].map(([v,l])=>
+    `<button role="menuitemradio" aria-checked="${cur===v}" data-v="${v}"><span>${esc(l)}</span><span class="ck">${cur===v?'\u2713':''}</span></button>`).join('');
+  wmenu.querySelectorAll('button').forEach(x=>x.onclick=e=>{ e.stopPropagation();
+    st.msgs[i].from=x.dataset.v; closeWho(); drawMsgs(); render(); });
+  const r=b.getBoundingClientRect();
+  wmenu.hidden=false; wmenu.style.minWidth=Math.max(160,r.width)+'px';
+  wmenu.style.top=(r.bottom+window.scrollY+4)+'px';
+  wmenu.style.left=Math.max(8,Math.min(r.left,innerWidth-wmenu.offsetWidth-8))+'px';
+  b.setAttribute('aria-expanded','true'); (wmenu.querySelector('[aria-checked=true]')||wmenu.querySelector('button')).focus();
+}
+document.addEventListener('click',e=>{ if(!wmenu.hidden&&!wmenu.contains(e.target)) closeWho(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!wmenu.hidden){ const b=wbtn; closeWho(); if(b) b.focus(); } });
+function refreshWho(){ document.querySelectorAll('.msg').forEach((c,i)=>{
+  const n=c.querySelector('.who .wn'); if(n&&st.msgs[i]) n.textContent=st.msgs[i].from==='me'?'Me':st.name; }); }
 function drawMsgs(){
   $('#msgs').innerHTML=st.msgs.map((m,i)=>`
     <div class="msg" data-i="${i}">
@@ -369,8 +391,7 @@ function drawMsgs(){
       </div>
       <div class="mbody">
         <div class="top">
-          <button class="side${m.from==='them'?' on':''}" data-i="${i}" data-s="them">Them</button>
-          <button class="side${m.from==='me'?' on':''}" data-i="${i}" data-s="me">Me</button>
+          <button class="who" data-i="${i}" aria-haspopup="menu" aria-expanded="false" title="Who sent this message"><span class="wn">${esc(m.from==='me'?'Me':st.name)}</span><span class="wch"></span></button>
           <input class="tm" data-i="${i}" value="${String(m.time).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">
           <button class="rm" data-i="${i}">&times;</button>
         </div>
@@ -380,7 +401,7 @@ function drawMsgs(){
   const box=$('#msgs');
   const move=(i,j)=>{ if(i===j||j<0||j>=st.msgs.length) return;
     const [t]=st.msgs.splice(i,1); st.msgs.splice(j,0,t); drawMsgs(); render(); };
-  box.querySelectorAll('.side').forEach(b=>b.onclick=()=>{st.msgs[+b.dataset.i].from=b.dataset.s;drawMsgs();render();});
+  box.querySelectorAll('.who').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openWho(b); });
   box.querySelectorAll('.mv').forEach(b=>b.onclick=()=>move(+b.dataset.i,+b.dataset.i+ +b.dataset.d));
   // Drag the grip to reorder. The whole card is the drop target.
   let from=-1;
@@ -450,7 +471,7 @@ window.addEventListener('message',function(e){
     st.msgs[m.idx].text=m.value;
     const ta=document.querySelector('#msgs textarea[data-i="'+m.idx+'"]');
     if(ta) ta.value=m.value;
-  } else if(m.kind==='name'){ st.name=m.value; }
+  } else if(m.kind==='name'){ st.name=m.value; refreshWho(); }
   else if(m.kind==='status'){ st.status=m.value; }
   // A message edit is already visible in the frame, so outputs are enough.
   // Name/status can also appear per row (KakaoTalk), so refresh once settled.
