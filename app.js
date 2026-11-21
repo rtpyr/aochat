@@ -359,6 +359,45 @@ function drawSkins(){
     `<button class="skin${k===st.skin?' on':''}" data-k="${k}">${v.label}</button>`).join('');
   $('#skins').querySelectorAll('.skin').forEach(b=>b.onclick=()=>{st.skin=b.dataset.k;drawSkins();render();});
 }
+/* Time picker: click the time to open a native date + time field. Its segments
+   are keyboard-editable and its calendar button opens the browser's date picker.
+   The chat shows the time as "h:mm AM/PM"; the full value is kept as m.at. */
+const tpop=document.createElement('div'); tpop.className='pmenu tpop'; tpop.hidden=true;
+tpop.setAttribute('role','dialog'); tpop.setAttribute('aria-label','Date and time');
+tpop.innerHTML='<input type="datetime-local" id="tpi" min="1900-01-01T00:00" max="9999-12-31T23:59" aria-label="Date and time"><button id="tpd" type="button">Done</button>';
+document.body.appendChild(tpop);
+let tbtn=null;
+const pad=n=>String(n).padStart(2,'0');
+function fmtTime(v){ const m=/^\d{4}-\d\d-\d\dT(\d\d):(\d\d)/.exec(v||''); if(!m) return '';
+  const h=+m[1]; return (h%12||12)+':'+m[2]+' '+(h<12?'AM':'PM'); }
+function timeValue(m){
+  if(typeof m.at==='string'&&/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(m.at)) return m.at;
+  const d=new Date(), day=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const t=/(\d{1,2}):(\d{2})\s*([ap])?/i.exec(m.time||'');
+  if(!t) return day+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+  let h=+t[1]%24; const ap=(t[3]||'').toLowerCase();
+  if(ap==='p'&&h<12) h+=12; if(ap==='a'&&h===12) h=0;
+  return day+'T'+pad(h)+':'+t[2];
+}
+function closeTime(){ tpop.hidden=true; if(tbtn){ tbtn.setAttribute('aria-expanded','false'); tbtn=null; } }
+function openTime(b){
+  if(tbtn===b){ closeTime(); return; }
+  closeTime(); closeWho(); tbtn=b; const i=+b.dataset.i, inp=tpop.querySelector('#tpi');
+  inp.value=timeValue(st.msgs[i]); b.setAttribute('aria-expanded','true');
+  inp.oninput=()=>{ if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(inp.value)) return;   // cleared, half-typed or odd year: wait
+    const m=st.msgs[i]; m.at=inp.value; m.time=fmtTime(inp.value);
+    b.innerHTML=esc(m.time); render(); };
+  inp.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); const bb=tbtn; closeTime(); if(bb) bb.focus(); } };
+  const r=b.getBoundingClientRect();
+  tpop.hidden=false;
+  tpop.style.top=(r.bottom+window.scrollY+4)+'px';
+  tpop.style.left=Math.max(8,Math.min(r.left,innerWidth-tpop.offsetWidth-8))+'px';
+  inp.focus();
+}
+tpop.querySelector('#tpd').onclick=()=>{ const b=tbtn; closeTime(); if(b) b.focus(); };
+document.addEventListener('pointerdown',e=>{ if(!tpop.hidden&&!tpop.contains(e.target)&&!(tbtn&&tbtn.contains(e.target))) closeTime(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!tpop.hidden){ const b=tbtn; closeTime(); if(b) b.focus(); } });
+
 /* Speaker picker: a button showing who sent the message; click for the list. */
 const wmenu=document.createElement('div'); wmenu.className='pmenu wmenu'; wmenu.setAttribute('role','menu'); wmenu.hidden=true;
 document.body.appendChild(wmenu);
@@ -392,7 +431,7 @@ function drawMsgs(){
       <div class="mbody">
         <div class="top">
           <button class="who" data-i="${i}" aria-haspopup="menu" aria-expanded="false" title="Who sent this message"><span class="wn">${esc(m.from==='me'?'Me':st.name)}</span><span class="wch"></span></button>
-          <input class="tm" data-i="${i}" value="${String(m.time).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">
+          <button class="tm" data-i="${i}" aria-haspopup="dialog" aria-expanded="false" title="Edit date and time">${esc(m.time)||'&nbsp;'}</button>
           <button class="rm" data-i="${i}">&times;</button>
         </div>
         <textarea data-i="${i}">${m.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
@@ -422,7 +461,7 @@ function drawMsgs(){
   });
   box.querySelectorAll('.rm').forEach(b=>b.onclick=()=>{st.msgs.splice(+b.dataset.i,1);drawMsgs();render();});
   box.querySelectorAll('textarea').forEach(t=>t.oninput=()=>{st.msgs[+t.dataset.i].text=t.value;render();});
-  box.querySelectorAll('.tm').forEach(t=>t.oninput=()=>{st.msgs[+t.dataset.i].time=t.value;render();});
+  box.querySelectorAll('.tm').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openTime(b); });
 }
 
 /* ---- preview editing -------------------------------------------------
@@ -574,7 +613,8 @@ function cleanState(d){
   const str=(v,max,def)=>typeof v==='string'?v.slice(0,max):def;
   const num=(v,lo,hi,def)=>(typeof v==='number'&&isFinite(v))?Math.min(hi,Math.max(lo,v)):def;
   const msgs=(Array.isArray(o.msgs)?o.msgs:base.msgs).slice(0,1000)
-    .map(m=>({from:(m&&m.from==='me')?'me':'them',text:str(m&&m.text,5000,''),time:str(m&&m.time,40,'')}));
+    .map(m=>{ const r={from:(m&&m.from==='me')?'me':'them',text:str(m&&m.text,5000,''),time:str(m&&m.time,40,'')};
+      if(m&&typeof m.at==='string'&&/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(m.at)) r.at=m.at; return r; });
   return {skin:SKINS[o.skin]?o.skin:base.skin,w:num(o.w,100,1000,base.w),h:num(o.h,100,2000,base.h),
     name:str(o.name,200,base.name),status:str(o.status,200,base.status),msgs};
 }

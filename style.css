@@ -61,7 +61,8 @@ input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);
 .mvbox .dn .chev{transform:rotate(45deg) translate(-1px,-1px)}
 .mvbox .dots{width:8px;height:12px;background:radial-gradient(circle,currentColor 1.2px,transparent 1.5px) 0 0/4px 4px}
 .msg .rm{border:none;background:none;color:var(--warn);cursor:pointer;font-size:14px;padding:0 4px}
-.msg .tm{width:62px;padding:3px 5px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);font:inherit;font-size:11px}
+.msg .tm{width:68px;padding:3px 5px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink);font:inherit;font-size:11px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.msg .tm:hover,.msg .tm[aria-expanded=true]{border-color:var(--accent);color:var(--accent)}
 button.add{width:100%;padding:7px;border:1px dashed var(--line);border-radius:7px;background:var(--field);color:var(--accent);cursor:pointer;font:inherit;font-weight:600}
 .head{padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex:0 0 auto}
 iframe{border:none;background:#fff;display:block;position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0}
@@ -128,3 +129,13 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .dact button{padding:5px 14px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer}
 .dact .primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .dact .danger{background:var(--warn);border-color:var(--warn);color:#fff}
+
+.tpop{display:flex;gap:6px;align-items:center;min-width:0;max-width:none;padding:6px}
+.tpop[hidden]{display:none}
+.tpop input{padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);font:inherit;font-size:12.5px}
+.tpop input:focus{outline:none;border-color:var(--accent)}
+.tpop input::-webkit-datetime-edit-fields-wrapper{padding:0}
+.tpop input::-webkit-datetime-edit-month-field:focus,.tpop input::-webkit-datetime-edit-day-field:focus,.tpop input::-webkit-datetime-edit-year-field:focus,
+.tpop input::-webkit-datetime-edit-hour-field:focus,.tpop input::-webkit-datetime-edit-minute-field:focus,.tpop input::-webkit-datetime-edit-ampm-field:focus{background:var(--accent);color:var(--on-accent)}
+.tpop button{padding:5px 11px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer}
+.tpop button:hover{border-color:var(--accent);color:var(--accent)}
