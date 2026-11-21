@@ -5,10 +5,12 @@ After **every** change, commit and push to `main`. Don't batch changes or wait
 to be asked. A change that only exists in a preview is not done.
 
 ## What this repo is
-`index.html` + `style.css` + `app.js` — a static page, no build step, no
+`index.html` + `style.css` + `store.js` + `app.js` — a static page, no build step, no
 dependencies, plain relative links so it works on GitHub Pages and from
 `file://`. It generates chat mockups that survive posting to Archive of Our Own.
-The AO3 rules, skins and generators are all in `app.js`.
+The AO3 rules, skins and generators are all in `app.js`. `store.js` is the
+IndexedDB layer for local projects (no accounts, no network, nothing synced); keep it
+that way and never word the UI as if data were in the cloud.
 
 ## Invariants — do not break these
 The generated HTML and CSS must survive AO3's sanitizer and CSS cleaner.
@@ -45,7 +47,7 @@ JS cleaner over the same CSS and fails if they differ. It needs otwarchive's
 run it. GitHub Actions runs it on every push and weekly.
 
 ## Cache busting
-Run `sh tools/bump.sh` after any change to `style.css` or `app.js`, before
+Run `sh tools/bump.sh` after any change to `style.css`, `store.js` or `app.js`, before
 committing. It stamps `index.html` with a hash of both so browsers can't run a
 cached `app.js` against a newer page (that blanked the whole app once). CI fails
 if the stamp is stale.

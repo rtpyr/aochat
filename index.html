@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>aochat</title>
-<link rel="stylesheet" href="style.css?v=0f321a25">
+<link rel="stylesheet" href="style.css?v=288111d7">
 <script>
 /* site theme only; the phone preview is never themed */
 (function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
@@ -15,9 +15,35 @@
 <body>
 <header>
   <h1>aochat</h1>
+  <select id="proj" class="proj" aria-label="Project" title="Switch project" disabled></select>
+  <button class="hbtn pbtn" id="pbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="pmenu" title="Project menu" aria-label="Project menu">&#8943;</button>
   <span style="flex:1"></span>
+  <span class="savest" id="savest" role="status" aria-live="polite"><i class="dot"></i><span id="savetx">Opening&hellip;</span></span>
   <button class="switch" id="theme" role="switch" aria-checked="false" aria-label="Dark mode" title="Dark mode"><span class="trk"></span></button>
 </header>
+<div class="pmenu" id="pmenu" role="menu" hidden>
+  <button role="menuitem" data-a="new">New project</button>
+  <button role="menuitem" data-a="rename">Rename&hellip;</button>
+  <button role="menuitem" data-a="dup">Duplicate</button>
+  <button role="menuitem" data-a="del" class="danger">Delete&hellip;</button>
+  <hr>
+  <button role="menuitem" data-a="exp">Export this project (.json)</button>
+  <button role="menuitem" data-a="expall">Export all projects (.json)</button>
+  <button role="menuitem" data-a="imp">Import from .json&hellip;</button>
+  <hr>
+  <p class="pnote">Projects are saved only in this browser, on this device. There is no account and nothing is uploaded or synced. Clearing browser or site data can delete them &mdash; export a backup to keep a copy.</p>
+  <p class="pnote" id="pstate"></p>
+</div>
+<input type="file" id="impf" accept=".json,application/json" hidden>
+<div class="notice" id="notice" hidden>
+  <span id="noticetx">Your projects are saved only in this browser, on this device &mdash; no account, nothing uploaded or synced. Clearing browser or site data can delete them, so export a backup now and then.</span>
+  <button id="nexp">Export backup</button><button id="nok">Got it</button>
+</div>
+<dialog id="dlg"><form method="dialog">
+  <h2 id="dlgT"></h2><p id="dlgP"></p>
+  <input id="dlgI" type="text" maxlength="80" autocomplete="off" aria-label="Project name">
+  <div class="dact"><button value="ok" id="dlgOk" class="primary">OK</button><button value="cancel" id="dlgNo" formnovalidate>Cancel</button></div>
+</form></dialog>
 <main>
   <!-- ============ BUILDER ============ -->
   <div class="col" id="build">
@@ -60,6 +86,7 @@
   </div>
 </main>
 
-<script src="app.js?v=0f321a25"></script>
+<script src="store.js?v=288111d7"></script>
+<script src="app.js?v=288111d7"></script>
 </body>
 </html>

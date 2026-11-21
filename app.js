@@ -514,6 +514,7 @@ function snapshot(){
   hist=hist.slice(0,hi+1); hist.push(j); hi=hist.length-1;
   if(hist.length>80){ hist.shift(); hi--; }
   syncHist();
+  queueSave();
 }
 function syncHist(){ $('#undo').disabled=hi<=0; $('#redo').disabled=hi>=hist.length-1; }
 function restore(j){
@@ -521,6 +522,7 @@ function restore(j){
   const o=JSON.parse(j); Object.keys(o).forEach(k=>st[k]=o[k]);
   drawSkins(); drawMsgs(); render();
   restoring=false; syncHist();
+  queueSave();
 }
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t);
   $('#theme').setAttribute('aria-checked',String(t==='dark'));
@@ -536,4 +538,246 @@ window.addEventListener('keydown',e=>{
   else if((k==='z'&&e.shiftKey)||k==='y'){ e.preventDefault(); $('#redo').click(); }
 });
 
-drawSkins();drawMsgs();render();
+
+/* ---- local projects -------------------------------------------------
+   Account-free and offline: projects live in this browser's IndexedDB
+   (store.js). Nothing is sent anywhere. The status indicator is driven by the
+   real result of each IndexedDB transaction, never assumed. -------------- */
+const PJ={cur:null,list:[],ready:false,timer:null,writing:null,lastJson:'',failed:false,err:null,
+  edited:false,persist:'unknown',status:'loading'};
+const DEFAULT_ST=JSON.stringify({skin:st.skin,w:st.w,h:st.h,name:st.name,status:st.status,msgs:st.msgs});
+
+/* Accept only the fields the editor understands, whatever the source (old
+   save, imported file). Same shape as `st`; unknown keys are dropped. */
+function cleanState(d){
+  const base=JSON.parse(DEFAULT_ST), o=(d&&typeof d==='object')?d:{};
+  const str=(v,max,def)=>typeof v==='string'?v.slice(0,max):def;
+  const num=(v,lo,hi,def)=>(typeof v==='number'&&isFinite(v))?Math.min(hi,Math.max(lo,v)):def;
+  const msgs=(Array.isArray(o.msgs)?o.msgs:base.msgs).slice(0,1000)
+    .map(m=>({from:(m&&m.from==='me')?'me':'them',text:str(m&&m.text,5000,''),time:str(m&&m.time,40,'')}));
+  return {skin:SKINS[o.skin]?o.skin:base.skin,w:num(o.w,100,1000,base.w),h:num(o.h,100,2000,base.h),
+    name:str(o.name,200,base.name),status:str(o.status,200,base.status),msgs};
+}
+function applyState(data){ const c=cleanState(data); Object.keys(st).forEach(k=>delete st[k]); Object.assign(st,c); }
+function showProject(rec){
+  PJ.cur=rec; restoring=true; applyState(rec.data); hist=[]; hi=-1;
+  PJ.lastJson=JSON.stringify(st); PJ.failed=false; PJ.err=null;
+  clearTimeout(PJ.timer); PJ.timer=null;
+  drawSkins(); drawMsgs(); render(); restoring=false;
+  snapshot();
+  syncHist(); setStatus('saved');
+}
+
+function setStatus(s){
+  PJ.status=s; const el=$('#savest'); el.dataset.s=s;
+  const tx={loading:'Opening…',saving:'Saving…',saved:'Saved locally',
+    failed:'Save failed — retry',unavailable:'Not saved — storage unavailable'}[s];
+  $('#savetx').textContent=tx;
+  const when=PJ.cur&&PJ.cur.updated?new Date(PJ.cur.updated).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'';
+  el.title=s==='saved'?'Saved in this browser'+(when?' at '+when:'')+'. Not synced anywhere — export a backup to keep a copy.'
+    :s==='failed'?'Could not write to browser storage ('+((PJ.err&&(PJ.err.name||PJ.err.message))||'unknown error')+'). Your changes are only in this open tab. Click to retry, or export a backup.'
+    :s==='unavailable'?'This browser is not allowing local storage (private mode or storage turned off). Your work is only in this open tab — use Export to keep a copy.'
+    :s==='saving'?'Writing to this browser’s storage…':'';
+  el.style.cursor=s==='failed'?'pointer':'';
+}
+$('#savest').onclick=()=>{ if(PJ.status==='failed') flush(); };
+
+function queueSave(){
+  if(!PJ.ready||!PJ.cur||restoring) return;
+  if(JSON.stringify(st)===PJ.lastJson&&!PJ.failed) return;
+  PJ.edited=true; setStatus('saving');
+  clearTimeout(PJ.timer); PJ.timer=setTimeout(flush,600);
+}
+async function flush(){
+  clearTimeout(PJ.timer); PJ.timer=null;
+  if(!PJ.ready||!PJ.cur) return;
+  if(PJ.writing){ await PJ.writing; if(!PJ.failed&&JSON.stringify(st)!==PJ.lastJson) return flush(); return; }
+  const id=PJ.cur.id, j=JSON.stringify(st);
+  if(j===PJ.lastJson&&!PJ.failed){ if(!PJ.timer) setStatus('saved'); return; }
+  setStatus('saving');
+  PJ.writing=AoStore.save(id,JSON.parse(j)).then(t=>{
+    if(PJ.cur&&PJ.cur.id===id){ PJ.lastJson=j; PJ.cur.updated=t; }
+    PJ.failed=false; PJ.err=null;
+    if(!PJ.timer&&JSON.stringify(st)===j) setStatus('saved');
+    chan('saved',id); afterSave();
+  },e=>{ PJ.failed=true; PJ.err=e; setStatus('failed'); }).then(()=>{ PJ.writing=null; });
+  return PJ.writing;
+}
+/* After the user's first real edit has been written, ask the browser to keep
+   this site's data. The browser may say no (or ask the user); we only report
+   what it answered. */
+async function afterSave(){
+  if(!PJ.edited||PJ.persist==='persistent'||PJ.persistAsked) return;
+  PJ.persistAsked=true; PJ.persist=await AoStore.persistence(true); showPersist();
+}
+function showPersist(){
+  $('#pstate').textContent={persistent:'Browser storage: marked persistent, so the browser should not clear it automatically.',
+    'best-effort':'Browser storage: best-effort — the browser may clear it when space is low or if you clear site data.',
+    unsupported:'This browser cannot confirm whether storage is protected from automatic clearing.',
+    unknown:''}[PJ.persist]||'';
+}
+
+/* cross-tab: keep the project list fresh, never overwrite unsaved work */
+let bc=null; try{ bc=new BroadcastChannel('aochat'); }catch(e){}
+const chan=(t,id)=>{ try{ bc&&bc.postMessage({t,id}); }catch(e){} };
+if(bc) bc.onmessage=async e=>{
+  const m=e.data||{}; if(!PJ.ready) return;
+  const idle=!PJ.timer&&!PJ.writing&&JSON.stringify(st)===PJ.lastJson;
+  try{
+    if(m.t==='deleted'&&PJ.cur&&m.id===PJ.cur.id){ await afterDelete(); return; }
+    if(m.t==='saved'&&PJ.cur&&m.id===PJ.cur.id&&idle){ const r=await AoStore.get(m.id); if(r) showProject(r); }
+    await refreshList();
+  }catch(_){}
+};
+
+async function refreshList(){
+  PJ.list=await AoStore.list();
+  const sel=$('#proj'); sel.innerHTML='';
+  PJ.list.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; sel.appendChild(o); });
+  if(PJ.cur) sel.value=PJ.cur.id; sel.disabled=!PJ.list.length;
+}
+function uniqueName(base){
+  const have=new Set(PJ.list.map(p=>p.name)); if(!have.has(base)) return base;
+  let n=2; while(have.has(base+' '+n)) n++; return base+' '+n;
+}
+
+/* small modal built on <dialog>; resolves to the typed value, true, or null */
+function ask(o){ return new Promise(res=>{
+  const d=$('#dlg'),inp=$('#dlgI'),ok=$('#dlgOk');
+  $('#dlgT').textContent=o.title; $('#dlgP').textContent=o.text||'';
+  inp.hidden=!o.input; inp.required=!!o.input; inp.value=o.value||'';
+  ok.textContent=o.ok||'OK'; ok.className=o.danger?'danger':'primary';
+  $('#dlgNo').hidden=!!o.info;
+  d.onclose=()=>res(d.returnValue==='ok'?(o.input?inp.value.trim():true):null);
+  d.returnValue=''; d.showModal(); (o.input?inp:ok).focus(); if(o.input) inp.select();
+}); }
+
+async function saveBeforeLeaving(){
+  await flush();
+  if(PJ.failed) return !!(await ask({title:'Changes not saved',danger:true,ok:'Switch anyway',
+    text:'The latest changes to this project could not be saved to this browser. Switching will lose them. Export a backup first if you want to keep them.'}));
+  return true;
+}
+async function openId(id){
+  if(PJ.cur&&id===PJ.cur.id) return;
+  if(!(await saveBeforeLeaving())){ $('#proj').value=PJ.cur.id; return; }
+  const r=await AoStore.get(id); if(!r){ await refreshList(); return; }
+  showProject(r); AoStore.setMeta('lastOpen',id).catch(()=>{}); refreshList();
+}
+async function newProject(){
+  const name=await ask({title:'New project',input:true,value:uniqueName('Untitled project'),ok:'Create'}); if(!name) return;
+  if(!(await saveBeforeLeaving())) return;
+  try{ const r=await AoStore.create(name,cleanState(JSON.parse(DEFAULT_ST)));
+    PJ.edited=true; showProject(r); AoStore.setMeta('lastOpen',r.id).catch(()=>{}); chan('list'); await refreshList(); }
+  catch(e){ fail('Could not create the project',e); }
+}
+async function renameProject(){
+  const name=await ask({title:'Rename project',input:true,value:PJ.cur.name,ok:'Rename'}); if(!name||name===PJ.cur.name) return;
+  try{ PJ.cur.name=(await AoStore.rename(PJ.cur.id,name)).name; chan('list'); await refreshList(); }
+  catch(e){ fail('Could not rename the project',e); }
+}
+async function duplicateProject(){
+  try{ await flush(); const r=await AoStore.duplicate(PJ.cur.id,uniqueName(PJ.cur.name+' copy'));
+    showProject(r); AoStore.setMeta('lastOpen',r.id).catch(()=>{}); chan('list'); await refreshList(); }
+  catch(e){ fail('Could not duplicate the project',e); }
+}
+async function deleteProject(){
+  const ok=await ask({title:'Delete “'+PJ.cur.name+'”?',danger:true,ok:'Delete',
+    text:'This removes the project from this browser. It cannot be undone, and there is no cloud copy. Export it first if you might want it back.'});
+  if(!ok) return;
+  try{ const id=PJ.cur.id; clearTimeout(PJ.timer); PJ.timer=null; await (PJ.writing||Promise.resolve());
+    await AoStore.remove(id); chan('deleted',id); await afterDelete(); }
+  catch(e){ fail('Could not delete the project',e); }
+}
+async function afterDelete(){
+  PJ.list=await AoStore.list(); PJ.cur=null;
+  const next=PJ.list[0]||await AoStore.create('Untitled project',cleanState(JSON.parse(DEFAULT_ST)));
+  showProject(next); AoStore.setMeta('lastOpen',next.id).catch(()=>{}); await refreshList();
+}
+const fail=(title,e)=>ask({title,info:true,text:(e&&(e.message||e.name))||'Unknown error'});
+
+/* ---- JSON export / import ---- */
+const FORMAT='aochat-backup', FVER=1;
+function download(name,obj){
+  const a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));
+  a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000);
+}
+const stamp=()=>new Date().toISOString().slice(0,10).replace(/-/g,'');
+const slug=n=>(n||'project').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'project';
+function wrapExport(projects){ return {format:FORMAT,version:FVER,exported:new Date().toISOString(),projects}; }
+function exportCurrent(){
+  const p={name:PJ.cur?PJ.cur.name:'aochat project',created:PJ.cur&&PJ.cur.created,updated:Date.now(),data:cleanState(st)};
+  download('aochat-'+slug(p.name)+'-'+stamp()+'.json',wrapExport([p]));
+}
+async function exportAll(){
+  try{ await flush(); const all=await AoStore.list();
+    download('aochat-backup-'+stamp()+'.json',wrapExport(all.map(r=>({name:r.name,created:r.created,updated:r.updated,
+      data:PJ.cur&&r.id===PJ.cur.id?cleanState(st):r.data})))); }
+  catch(e){ fail('Could not read projects to export',e); }
+}
+async function importFile(file){
+  try{
+    if(file.size>5*1024*1024) throw new Error('That file is larger than 5 MB, so it is probably not an aochat backup.');
+    let j; try{ j=JSON.parse(await file.text()); }catch(_){ throw new Error('That file is not valid JSON.'); }
+    let items;
+    if(j&&j.format===FORMAT&&Array.isArray(j.projects)) items=j.projects;
+    else if(j&&Array.isArray(j.msgs)) items=[{name:file.name.replace(/\.json$/i,''),data:j}];   // a bare editor state
+    else throw new Error('That does not look like an aochat project or backup file.');
+    items=items.filter(p=>p&&typeof p==='object'&&p.data&&typeof p.data==='object').slice(0,200);
+    if(!items.length) throw new Error('The file contains no projects.');
+    const newer=j.version>FVER;
+    if(!PJ.ready){ applyState(items[0].data); drawSkins(); drawMsgs(); render();
+      await ask({title:'Opened, not saved',info:true,text:'Storage is unavailable, so this is open in this tab only.'}); return; }
+    if(!(await saveBeforeLeaving())) return;
+    let first=null;
+    for(const p of items){
+      const nm=uniqueName(String(p.name||'Imported project').slice(0,80)+(PJ.list.some(x=>x.name===String(p.name||'').slice(0,80))?' (imported)':''));
+      const r=await AoStore.create(nm,cleanState(p.data)); PJ.list.push(r); first=first||r;
+    }
+    PJ.edited=true; showProject(first); AoStore.setMeta('lastOpen',first.id).catch(()=>{}); chan('list'); await refreshList();
+    await ask({title:'Imported '+items.length+' project'+(items.length>1?'s':''),info:true,
+      text:'Added to this browser as new projects; nothing was overwritten.'+(newer?'\n\nThe file was made by a newer version of aochat, so some details may have been ignored.':'')});
+  }catch(e){ fail('Import failed',e); }
+}
+
+/* ---- menu + notice wiring ---- */
+const menu=$('#pmenu'),mbtn=$('#pbtn');
+function closeMenu(){ menu.hidden=true; mbtn.setAttribute('aria-expanded','false'); }
+mbtn.onclick=e=>{ e.stopPropagation();
+  if(!menu.hidden){ closeMenu(); return; }
+  const r=mbtn.getBoundingClientRect(); menu.style.top=(r.bottom+window.scrollY+6)+'px';
+  menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+'px';
+  menu.hidden=false; mbtn.setAttribute('aria-expanded','true'); menu.querySelector('button').focus(); };
+document.addEventListener('click',e=>{ if(!menu.hidden&&!menu.contains(e.target)) closeMenu(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!menu.hidden){ closeMenu(); mbtn.focus(); } });
+menu.onclick=e=>{ const b=e.target.closest('button[data-a]'); if(!b) return; closeMenu();
+  const needs=['rename','dup','del','new'].includes(b.dataset.a)&&!PJ.ready;
+  if(needs){ fail('Storage is unavailable','Projects cannot be created, renamed or deleted because this browser is not allowing local storage. You can still Export and Import.'); return; }
+  ({new:newProject,rename:renameProject,dup:duplicateProject,del:deleteProject,exp:exportCurrent,expall:()=>PJ.ready?exportAll():exportCurrent(),
+    imp:()=>$('#impf').click()})[b.dataset.a](); };
+$('#impf').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f) importFile(f); };
+$('#proj').onchange=e=>openId(e.target.value);
+$('#nok').onclick=()=>{ $('#notice').hidden=true; AoStore.setMeta('noticeDismissed',true).catch(()=>{}); };
+$('#nexp').onclick=()=>exportCurrent();
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') flush(); });
+addEventListener('pagehide',()=>{ flush(); });
+
+/* ---- start up ---- */
+(async function init(){
+  try{
+    await AoStore.open();
+    PJ.list=await AoStore.list();
+    const last=await AoStore.getMeta('lastOpen');
+    let rec=PJ.list.find(p=>p.id===last)||PJ.list[0];
+    if(!rec) rec=await AoStore.create('Untitled project',cleanState(JSON.parse(DEFAULT_ST)));
+    PJ.ready=true; showProject(rec);
+    AoStore.setMeta('lastOpen',rec.id).catch(()=>{});
+    await refreshList();
+    PJ.persist=await AoStore.persistence(false); showPersist();
+    if(!(await AoStore.getMeta('noticeDismissed'))) $('#notice').hidden=false;
+  }catch(e){
+    PJ.err=e; drawSkins(); drawMsgs(); render(); setStatus('unavailable');
+    $('#noticetx').textContent='This browser is not allowing local storage (private mode or storage turned off), so your work is NOT being saved. Use the ⋯ menu to export a .json copy before closing this tab.';
+    $('#nok').hidden=true; $('#notice').hidden=false;
+  }
+})();
