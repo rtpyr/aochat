@@ -537,7 +537,7 @@ function drawMsgs(){
         <div class="top">
           <button class="who" data-i="${i}" aria-haspopup="menu" aria-expanded="false" title="Who sent this message"><span class="wn">${esc(m.from==='me'?'Me':st.name)}</span><span class="wch"></span></button>
           <button class="tm" data-i="${i}" aria-haspopup="dialog" aria-expanded="false" title="Edit date and time">${esc(m.time)||'&nbsp;'}</button>
-          <button class="rm" data-i="${i}">&times;</button>
+          <button class="rm" data-i="${i}" aria-label="Delete message" title="Delete message"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"/></svg></button>
         </div>
         <textarea data-i="${i}">${m.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
       </div>
