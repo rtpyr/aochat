@@ -707,7 +707,7 @@ function restore(j){
   queueSave();
 }
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t);
-  $('#theme').setAttribute('aria-checked',String(t==='dark'));
+  $('#theme').setAttribute('aria-checked',String(t==='dark')); { const d=$('#sdark'); if(d) d.setAttribute('aria-checked',String(t==='dark')); }
   try{ localStorage.setItem('aochat-theme',t); }catch(e){}
   if($('#pv').getAttribute('srcdoc')) render(); }   // repaint the page behind the phone
 $('#theme').onclick=()=>setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
@@ -1045,6 +1045,46 @@ SHEETMQ.addEventListener('change',()=>{ document.body.dataset.view='edit'; if(SH
 // The page always opens on the preview alone (sheet collapsed in portrait).
 if(SHEETMQ.matches) setSheet('min',null,false);
 else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)').matches){ document.body.dataset.view='preview'; paintTabs(); }
+
+/* ---- app menu (logo) ------------------------------------------------- */
+(function(){
+  const side=$('#side'), scrim=$('#scrim'), logo=$('#logo'), sub=$('#ssub'), rec=$('#srecent'), dk=$('#sdark');
+  const isOpen=()=>side.classList.contains('open');
+  function openSide(){
+    closeMenu(); closeWho(); closeTime();
+    document.documentElement.style.setProperty('--hh',document.querySelector('header').getBoundingClientRect().bottom+'px');
+    $('#scur').textContent=(PJ.cur&&PJ.cur.name)||($('#proj').selectedOptions[0]||{}).textContent||'No project';
+    dk.setAttribute('aria-checked',String(document.documentElement.getAttribute('data-theme')==='dark'));
+    side.classList.add('open'); scrim.classList.add('open'); logo.setAttribute('aria-expanded','true');
+    side.querySelector('.si').focus({preventScroll:true});
+  }
+  function closeSide(back){
+    side.classList.remove('open'); scrim.classList.remove('open'); logo.setAttribute('aria-expanded','false');
+    rec.setAttribute('aria-expanded','false'); sub.hidden=true; if(back) logo.focus();
+  }
+  logo.onclick=e=>{ e.stopPropagation(); isOpen()?closeSide(true):openSide(); };
+  scrim.onclick=()=>closeSide(false);
+  document.addEventListener('keydown',e=>{
+    if(!isOpen()) return;
+    if(e.key==='Escape'){ closeSide(true); return; }
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      const items=[...side.querySelectorAll('.si,.sbtn')].filter(b=>b.offsetParent); let i=items.indexOf(document.activeElement);
+      i=e.key==='ArrowDown'?(i+1)%items.length:(i<=0?items.length-1:i-1); items[i].focus(); e.preventDefault(); } });
+  side.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.a){ closeSide(false); act(b); return; }
+    if(b.dataset.pid){ closeSide(false); openId(b.dataset.pid); return; }
+    if(b===rec){ const open=sub.hidden;
+      sub.innerHTML=''; (PJ.list||[]).forEach(p=>{ const x=document.createElement('button'); x.className='si'+(PJ.cur&&p.id===PJ.cur.id?' cur':''); x.dataset.pid=p.id;
+        const s=document.createElement('span'); s.textContent=p.name; x.appendChild(s); sub.appendChild(x); });
+      if(!sub.children.length){ const n=document.createElement('div'); n.className='si'; n.style.cursor='default'; n.textContent='No projects yet'; sub.appendChild(n); }
+      sub.hidden=!open; rec.setAttribute('aria-expanded',String(open)); return; }
+    if(b===dk){ setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); return; }
+    if(b.id==='sstore'){ closeSide(false); ask({title:'Where is my data?',info:true,ok:'Got it',
+      text:'Your projects are saved only in this browser, on this device. Nothing is uploaded or synced, and there are no accounts. Clearing site data deletes them, so export a backup now and then.'}); }
+  });
+  addEventListener('resize',()=>{ if(isOpen()) document.documentElement.style.setProperty('--hh',document.querySelector('header').getBoundingClientRect().bottom+'px'); });
+})();
 
 /* ---- start up ---- */
 (async function init(){

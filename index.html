@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>aochat</title>
-<link rel="stylesheet" href="style.css?v=e168d188">
+<link rel="stylesheet" href="style.css?v=14a6e77c">
 <script>
 /* site theme only; the phone preview is never themed */
 (function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
@@ -14,7 +14,7 @@
 </head>
 <body data-view="edit" data-sheet="min">
 <header>
-  <h1>aochat</h1>
+  <h1><button class="logo" id="logo" aria-haspopup="dialog" aria-expanded="false" aria-controls="side" aria-label="aochat menu" title="Menu"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5v6a1.5 1.5 0 01-1.5 1.5H8l-3 3v-3h0A1.5 1.5 0 013 10.5z"/></svg><span>aochat</span></button></h1>
   <select id="proj" class="proj" aria-label="Project" title="Switch project" disabled></select>
   <div class="hact" id="hact" role="toolbar" aria-label="Project actions">
     <button class="cmd" data-a="new" title="New project"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11"/></svg><span>New</span></button>
@@ -29,6 +29,27 @@
   <span class="savest" id="savest" role="status" aria-live="polite"><i class="dot"></i><span id="savetx">Opening&hellip;</span></span>
   <button class="switch" id="theme" role="switch" aria-checked="false" aria-label="Dark mode" title="Dark mode"><span class="trk"></span></button>
 </header>
+<div class="scrim" id="scrim"></div>
+<aside class="side" id="side" aria-label="Menu">
+  <div class="s-head"><span class="s-av"><svg width="26" height="26" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5v6a1.5 1.5 0 01-1.5 1.5H8l-3 3v-3h0A1.5 1.5 0 013 10.5z"/></svg></span><span class="s-id"><b>aochat</b><small>Chat mockups for AO3</small></span></div>
+  <div class="s-cur"><small>Current project</small><span id="scur">&nbsp;</span></div>
+  <nav class="s-list" aria-label="Project">
+    <button class="si" data-a="new"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11"/></svg><span>New project</span></button>
+    <button class="si" data-a="rename"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 14.5l.8-3.3 7.6-7.6a1.4 1.4 0 012 0l.5.5a1.4 1.4 0 010 2l-7.6 7.6-3.3.8z"/><path d="M10.8 4.8l2.4 2.4"/></svg><span>Rename</span></button>
+    <button class="si" data-a="dup"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="6.5" width="8.5" height="8.5" rx="2"/><path d="M11.5 6.5V5.5a2 2 0 00-2-2h-4a2 2 0 00-2 2v4a2 2 0 002 2h1"/></svg><span>Duplicate</span></button>
+    <button class="si danger" data-a="del"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 5h11M7 5V3.5h4V5M5 5l.7 9.5h6.6L13 5M7.5 8v4M10.5 8v4"/></svg><span>Delete</span></button>
+    <hr>
+    <button class="si" id="srecent" aria-expanded="false" aria-controls="ssub"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M9 5.5V9l2.4 1.6"/></svg><span>Recent projects</span><i class="arr"></i></button>
+    <div class="s-sub" id="ssub" hidden></div>
+    <hr>
+    <button class="si" data-a="imp"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3.5V11M6 8.3l3 2.7 3-2.7M3.5 11v3.5h11V11"/></svg><span>Import backup</span></button>
+    <button class="si" data-a="exp"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V3.5M6 6.2l3-2.7 3 2.7M3.5 11v3.5h11V11"/></svg><span>Export this project</span></button>
+    <hr>
+    <button class="si" id="sstore"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.8l5.2 1.9v4.2c0 3-2.2 5.2-5.2 6.3-3-1.1-5.2-3.3-5.2-6.3V4.7z"/><path d="M6.9 9l1.6 1.6 2.8-3"/></svg><span>Where is my data?</span></button>
+    <button class="si" id="sdark" role="switch" aria-checked="false"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 10.3A6 6 0 017.7 3.5a6 6 0 106.8 6.8z"/></svg><span>Dark mode</span><i class="trk"></i></button>
+  </nav>
+  <div class="s-foot"><button class="sbtn" data-a="expall"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V3.5M6 6.2l3-2.7 3 2.7M3.5 11v3.5h11V11"/></svg><span>Back up all projects</span></button></div>
+</aside>
 <div class="pmenu" id="pmenu" role="menu" hidden>
   <button role="menuitem" data-a="exp">This project (.json)</button>
   <button role="menuitem" data-a="expall">All projects (.json)</button>
@@ -90,7 +111,7 @@
   <button data-v="preview" class="on" aria-pressed="true"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="1.8" width="9" height="14.4" rx="2"/><path d="M8 13.8h2"/></svg><span>Preview</span></button>
   <button data-v="code" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 5L2.5 9l4 4M11.5 5l4 4-4 4"/></svg><span>Code</span></button>
 </nav>
-<script src="store.js?v=e168d188"></script>
-<script src="app.js?v=e168d188"></script>
+<script src="store.js?v=14a6e77c"></script>
+<script src="app.js?v=14a6e77c"></script>
 </body>
 </html>
