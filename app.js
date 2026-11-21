@@ -548,9 +548,26 @@ function drawMsgs(){
   box.querySelectorAll('.who').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openWho(b); });
   box.querySelectorAll('.mv').forEach(b=>b.onclick=()=>move(+b.dataset.i,+b.dataset.i+ +b.dataset.d));
   // Drag the grip to reorder. The whole card is the drop target.
-  let from=-1;
+  let from=-1, touchDrag=false;
   box.querySelectorAll('.grip').forEach(g=>{
-    g.ondragstart=e=>{ from=+g.dataset.i; e.dataTransfer.effectAllowed='move';
+    // Touch / pen: pointer-based drag (HTML5 drag-and-drop does not work from touch).
+    g.onpointerdown=e=>{ if(e.pointerType==='mouse'||e.button>0) return;
+      e.preventDefault(); touchDrag=true; from=+g.dataset.i;
+      const c=g.closest('.msg'); c.classList.add('drag'); g.setPointerCapture(e.pointerId);
+      let sc=box; while(sc&&!(sc.scrollHeight>sc.clientHeight&&/(auto|scroll)/.test(getComputedStyle(sc).overflowY))) sc=sc.parentElement;
+      let y=e.clientY, raf=0;
+      const hit=()=>{ const t=document.elementFromPoint(e.clientX||g.getBoundingClientRect().left+4,y);
+        const m=t&&t.closest&&t.closest('.msg'); box.querySelectorAll('.msg').forEach(x=>x.classList.toggle('over',x===m&&+x.dataset.i!==from)); return m; };
+      const tick=()=>{ if(!touchDrag) return; if(sc){ const r=sc.getBoundingClientRect();
+          if(y<r.top+50) sc.scrollTop-=10; else if(y>r.bottom-50) sc.scrollTop+=10; } hit(); raf=requestAnimationFrame(tick); };
+      raf=requestAnimationFrame(tick);
+      g.onpointermove=ev=>{ y=ev.clientY; };
+      const done=ev=>{ cancelAnimationFrame(raf); g.onpointermove=g.onpointerup=g.onpointercancel=null; touchDrag=false;
+        const m=ev.type==='pointerup'?hit():null; const f=from; from=-1;
+        box.querySelectorAll('.msg').forEach(x=>x.classList.remove('drag','over'));
+        if(m&&f>=0) move(f,+m.dataset.i); };
+      g.onpointerup=done; g.onpointercancel=done; };
+    g.ondragstart=e=>{ if(touchDrag){ e.preventDefault(); return; } from=+g.dataset.i; e.dataTransfer.effectAllowed='move';
       e.dataTransfer.setData('text/plain',String(from));
       const c=g.closest('.msg'); e.dataTransfer.setDragImage(c,12,12); c.classList.add('drag'); };
     g.ondragend=()=>{ from=-1; box.querySelectorAll('.msg').forEach(c=>c.classList.remove('drag','over')); };

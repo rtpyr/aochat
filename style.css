@@ -214,7 +214,7 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
   .msg .rm{flex:0 0 28px;width:28px;height:28px}
   .mvbox{flex:0 0 36px}
   .mvbox .mv{min-height:30px}
-  .mvbox .grip{display:none}
+  .mvbox .grip{flex:0 0 32px}
   .add{padding:12px}
   .head .hbtn,.zoom button{min-height:36px}
   .head .hbtn{width:36px;height:36px}
@@ -245,4 +245,5 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 }
 @media (max-width:380px){ .proj{flex-basis:125px;max-width:125px} }
 @media (max-width:340px){ #savetx{display:none} }
-@media (pointer:coarse){ .mvbox .grip{display:none} }
+@media (pointer:coarse){ .mvbox .grip{touch-action:none} }
+.mvbox .grip{touch-action:none}
