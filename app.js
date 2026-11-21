@@ -467,7 +467,7 @@ function drawCal(){
 calEl.addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return; const p=parseAt(tinp.value); if(!p) return;
   if(b.dataset.n){ const d=new Date(cview.y,cview.m+ +b.dataset.n,1); cview={y:d.getFullYear(),m:d.getMonth()}; drawCal(); return; }
-  if(b.classList.contains('ctoday')){ const n=new Date(); cview={y:n.getFullYear(),m:n.getMonth()}; setAt(Object.assign(p,{y:n.getFullYear(),mo:n.getMonth()+1,d:n.getDate()})); return; }
+  if(b.classList.contains('ctoday')){ const n=new Date(); cview={y:n.getFullYear(),m:n.getMonth()}; setAt({y:n.getFullYear(),mo:n.getMonth()+1,d:n.getDate(),h:n.getHours(),mi:n.getMinutes()}); return; }
   if(b.dataset.d){ const y=+b.dataset.y,m=+b.dataset.m; cview={y,m}; setAt(Object.assign(p,{y,mo:m+1,d:+b.dataset.d})); return; }
   const pm=p.h>=12;
   if(b.dataset.h){ p.h=(+b.dataset.h%12)+(pm?12:0); setAt(p); }
