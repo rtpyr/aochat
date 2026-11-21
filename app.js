@@ -1104,7 +1104,7 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   const rails=[$('#rail'),$('#railm')], logo=$('#logo'), build=$('#build');
   const avail=()=>{ const l=SKSECS[st.skin]; return ITEMS.filter(i=>!l||l.includes(i[0])); };
   function paintRail(){
-    const l=avail(), btn=([k,t,i],c)=>`<button class="rb ${c}" data-go="${k}" title="${t}">${i}<span>${t}</span>${c==='parent'?miniTile(st.skin):''}</button>`;
+    const l=avail(), btn=([k,t,i],c)=>`<button class="rb ${c}" data-go="${k}" title="${t}" aria-label="${t}">${i}<span>${t}</span>${c==='parent'?miniTile(st.skin):''}</button>`;
     const html=btn(l[0],'parent')+`<div class="rkids">${l.slice(1).map(x=>btn(x,'child')).join('')}</div>`;
     rails.forEach((r,i)=>{ r.innerHTML=html+(i===0?`<button class="rb rtog" id="rtog" aria-controls="rail" title="Collapse sidebar" aria-label="Collapse or expand the sidebar"><svg width="28" height="18" viewBox="0 0 28 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5l-4.5 4.5 4.5 4.5"/><path d="M16 4.5l-4.5 4.5 4.5 4.5"/><path d="M23 4.5l-4.5 4.5 4.5 4.5"/></svg></button>`:''); });
     syncTog();
