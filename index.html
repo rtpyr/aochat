@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>aochat</title>
-<link rel="stylesheet" href="style.css?v=3e779bcb">
+<link rel="stylesheet" href="style.css?v=c5c86190">
 <script>
 /* site theme only; the phone preview is never themed */
 (function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
@@ -16,14 +16,14 @@
 <header>
   <h1>aochat</h1>
   <select id="proj" class="proj" aria-label="Project" title="Switch project" disabled></select>
-  <div class="hact" id="hact">
-    <button class="hbtn txt" data-a="new" title="New project">New</button>
-    <button class="hbtn txt" data-a="rename" title="Rename this project">Rename</button>
-    <button class="hbtn txt" data-a="dup" title="Duplicate this project">Duplicate</button>
-    <button class="hbtn txt danger" data-a="del" title="Delete this project">Delete</button>
+  <div class="hact" id="hact" role="toolbar" aria-label="Project actions">
+    <button class="cmd" data-a="new" title="New project"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11"/></svg><span>New</span></button>
+    <button class="cmd" data-a="rename" title="Rename this project"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 14.5l.8-3.3 7.6-7.6a1.4 1.4 0 012 0l.5.5a1.4 1.4 0 010 2l-7.6 7.6-3.3.8z"/><path d="M10.8 4.8l2.4 2.4"/></svg><span>Rename</span></button>
+    <button class="cmd" data-a="dup" title="Duplicate this project"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="6.5" width="8.5" height="8.5" rx="2"/><path d="M11.5 6.5V5.5a2 2 0 00-2-2h-4a2 2 0 00-2 2v4a2 2 0 002 2h1"/></svg><span>Duplicate</span></button>
+    <button class="cmd danger" data-a="del" title="Delete this project"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 5h11M7 5V3.5h4V5M5 5l.7 9.5h6.6L13 5M7.5 8v4M10.5 8v4"/></svg><span>Delete</span></button>
     <span class="hsep"></span>
-    <button class="hbtn txt" id="pbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="pmenu" title="Export a .json backup">Export <span class="ech"></span></button>
-    <button class="hbtn txt" data-a="imp" title="Import a .json backup">Import</button>
+    <button class="cmd" id="pbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="pmenu" title="Export a .json backup"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V3.5M6 6.2l3-2.7 3 2.7M3.5 11v3.5h11V11"/></svg><span>Export <i class="ech"></i></span></button>
+    <button class="cmd" data-a="imp" title="Import a .json backup"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3.5V11M6 8.3l3 2.7 3-2.7M3.5 11v3.5h11V11"/></svg><span>Import</span></button>
   </div>
   <span style="flex:1"></span>
   <span class="savest" id="savest" role="status" aria-live="polite"><i class="dot"></i><span id="savetx">Opening&hellip;</span></span>
@@ -84,7 +84,7 @@
   </div>
 </main>
 
-<script src="store.js?v=3e779bcb"></script>
-<script src="app.js?v=3e779bcb"></script>
+<script src="store.js?v=c5c86190"></script>
+<script src="app.js?v=c5c86190"></script>
 </body>
 </html>

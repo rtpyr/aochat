@@ -53,6 +53,9 @@ the inputs in `.msg`, the dialog and menu at the end of `style.css`) and reuse i
   rather than floating over the preview.
 - **Check it in a screenshot, in light *and* dark**, next to the existing controls.
   If it looks out of place, it is. This has been wrong several times.
+- **Exception:** the project actions in the header are a flat Windows-style command bar
+  (`.cmd`: icon over label, no border, `var(--accent-bg)` on hover). Keep new header actions in
+  that style.
 - This is for the site UI only. The generated chat mockups follow the AO3 rules above.
 
 ## Verifying
