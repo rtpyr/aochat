@@ -316,14 +316,13 @@ header h1{display:flex}
 .rb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 @media (min-width:901px),(orientation:landscape){ .rail{display:flex} }
 .sec{display:contents}
-.sec[data-sec=export]{display:none}
+.sec[data-sec=device]{display:none}
 #build.tabbed .sec{display:none}
 #build.tabbed .sec.on{display:block}
-.xbtns{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
-.xbtns button{flex:1 1 110px;padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px}
-.xbtns button:hover{border-color:var(--accent);color:var(--accent)}
-.xnote{margin:0;font-size:11.5px;line-height:1.45;color:var(--muted)}
-@media (pointer:coarse){ .xbtns button{padding:11px 8px} }
+.drow{display:flex;align-items:center;gap:8px;margin-top:5px}
+.drow span{width:42px;font-size:11px;color:var(--muted)}
+.drow input{flex:1;min-width:0}
+.drow output{width:44px;text-align:right;font-size:11px}
 @media (max-width:900px){ body:not([data-view=edit]) .rail{display:none} }
 @media (max-width:900px) and (orientation:portrait){
   .rail{display:none!important}

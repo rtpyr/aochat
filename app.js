@@ -699,10 +699,15 @@ function snapshot(){
   queueSave();
 }
 function syncHist(){ $('#undo').disabled=hi<=0; $('#redo').disabled=hi>=hist.length-1; }
+
+/* phone size (Device section of the rail) */
+function syncDevice(){ $('#sw').value=st.w; $('#swv').textContent=st.w+'px'; $('#sh').value=st.h; $('#shv').textContent=st.h+'px'; }
+$('#sw').oninput=e=>{ st.w=+e.target.value; $('#swv').textContent=st.w+'px'; render(); };
+$('#sh').oninput=e=>{ st.h=+e.target.value; $('#shv').textContent=st.h+'px'; render(); };
 function restore(j){
   restoring=true;
   const o=JSON.parse(j); Object.keys(o).forEach(k=>st[k]=o[k]);
-  drawSkins(); drawMsgs(); render();
+  drawSkins(); drawMsgs(); syncDevice(); render();
   restoring=false; syncHist();
   queueSave();
 }
@@ -757,7 +762,7 @@ function showProject(rec){
   PJ.cur=rec; restoring=true; applyState(rec.data); hist=[]; hi=-1;
   PJ.lastJson=JSON.stringify(st); PJ.failed=false; PJ.err=null;
   clearTimeout(PJ.timer); PJ.timer=null;
-  drawSkins(); drawMsgs(); render(); restoring=false;
+  drawSkins(); drawMsgs(); syncDevice(); render(); restoring=false;
   snapshot();
   syncHist(); setStatus('saved');
 }
@@ -1052,7 +1057,7 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
   const ITEMS=[
     ['skin','Skin',I('<path d="M9 2.8a6.2 6.2 0 100 12.4c1 0 1.5-.7 1.5-1.4 0-1-1-1.2-1-2.1 0-.8.6-1.3 1.5-1.3H13a2.2 2.2 0 002.2-2.2C15 5.3 12.4 2.8 9 2.8z"/><circle cx="5.8" cy="8.2" r=".7"/><circle cx="8.4" cy="5.7" r=".7"/><circle cx="11.7" cy="6.4" r=".7"/>')],
     ['msgs','Messages',I('<path d="M3 4.5A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5v6a1.5 1.5 0 01-1.5 1.5H8l-3 3v-3A1.5 1.5 0 013 10.5z"/>')],
-    ['export','Export',I('<path d="M9 11V3.5M6 6.2l3-2.7 3 2.7M3.5 11v3.5h11V11"/>')]
+    ['device','Device',I('<rect x="5" y="2.2" width="8" height="13.6" rx="1.8"/><path d="M8 13.3h2"/>')]
   ];
   const rails=[$('#rail'),$('#railm')], logo=$('#logo'), build=$('#build');
   rails.forEach(r=>{ r.innerHTML=ITEMS.map(([k,l,i])=>`<button class="rb" data-go="${k}">${i}<span>${l}</span></button>`).join(''); });
@@ -1076,11 +1081,6 @@ else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)')
     if(SHEETMQ.matches&&sheet==='min'){ document.body.dataset.view='edit'; setSheet('half',null,true); }
     show(b.dataset.go); build.scrollTop=0;
   });
-  // export panel
-  const flash=(btn,txt)=>{ const o=btn.textContent; btn.textContent=txt; setTimeout(()=>btn.textContent=o,1200); };
-  $('#xH').onclick=e=>{ $('#cpH').click(); flash(e.currentTarget,'Copied'); };
-  $('#xC').onclick=e=>{ $('#cpC').click(); flash(e.currentTarget,'Copied'); };
-  build.querySelector('[data-sec=export]').addEventListener('click',e=>{ const b=e.target.closest('button[data-a]'); if(b) act(b); });
 })();
 
 /* ---- start up ---- */

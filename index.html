@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>aochat</title>
-<link rel="stylesheet" href="style.css?v=030dea2c">
+<link rel="stylesheet" href="style.css?v=cb980ba5">
 <script>
 /* site theme only; the phone preview is never themed */
 (function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
@@ -58,12 +58,10 @@
       <div id="msgs"></div>
       <button class="add" id="addm">+ Add message</button>
     </div>
-    <div class="sec" data-sec="export">
-      <label class="f">Copy for AO3</label>
-      <div class="xbtns"><button id="xH">Copy HTML</button><button id="xC">Copy CSS</button></div>
-      <label class="f">Backup</label>
-      <div class="xbtns"><button data-a="exp">Export this project</button><button data-a="expall">Export all</button><button data-a="imp">Import</button></div>
-      <p class="xnote">Projects are saved only in this browser. A .json backup is the only copy that survives clearing site data.</p>
+    <div class="sec" data-sec="device">
+      <label class="f">Phone size</label>
+      <div class="drow"><span>Width</span><input type="range" id="sw" min="220" max="420" step="10" value="300" aria-label="Phone width"><output id="swv">300px</output></div>
+      <div class="drow"><span>Screen</span><input type="range" id="sh" min="200" max="560" step="20" value="360" aria-label="Screen height"><output id="shv">360px</output></div>
     </div>
   </div>
 
@@ -103,7 +101,7 @@
   <button data-v="preview" class="on" aria-pressed="true"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="1.8" width="9" height="14.4" rx="2"/><path d="M8 13.8h2"/></svg><span>Preview</span></button>
   <button data-v="code" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 5L2.5 9l4 4M11.5 5l4 4-4 4"/></svg><span>Code</span></button>
 </nav>
-<script src="store.js?v=030dea2c"></script>
-<script src="app.js?v=030dea2c"></script>
+<script src="store.js?v=cb980ba5"></script>
+<script src="app.js?v=cb980ba5"></script>
 </body>
 </html>
