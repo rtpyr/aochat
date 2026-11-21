@@ -1015,7 +1015,9 @@ new ResizeObserver(()=>{ const H=mainEl.offsetHeight;
   if(SHEETMQ.matches&&H!==lastMainH&&!mainEl.matches(':active')){ setSheet(sheet,null,false); } lastMainH=H; fitPreview(); }).observe(mainEl,{box:'border-box'});
 new ResizeObserver(()=>fitPreview()).observe($('#pvbox'));
 SHEETMQ.addEventListener('change',()=>{ document.body.dataset.view='edit'; if(SHEETMQ.matches){ setSheet('half',null,false); } else { mainEl.style.removeProperty('--sheet-h'); delete document.body.dataset.sheet; paintTabs(); } });
-if(SHEETMQ.matches) setSheet('half',null,false);
+// The page always opens on the preview alone (sheet collapsed in portrait).
+if(SHEETMQ.matches) setSheet('min',null,false);
+else if(matchMedia('(max-width:900px), (max-height:500px) and (pointer:coarse)').matches){ document.body.dataset.view='preview'; paintTabs(); }
 
 /* ---- start up ---- */
 (async function init(){

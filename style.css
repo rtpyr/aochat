@@ -276,12 +276,12 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 /* portrait phones: editor is a bottom sheet over a full-height preview */
 .sgrab{display:none}
 @media (max-width:900px) and (orientation:portrait){
-  main{padding-bottom:var(--sheet-h,46%)}
+  main{padding-bottom:var(--sheet-h,30px)}
   main.snap{transition:padding-bottom .2s ease}
   main.snap #build{transition:height .2s ease}
   body[data-view=code] main{padding-bottom:0}
   body[data-view=edit] #mid{display:flex}
-  body[data-view=edit] #build{display:flex;position:absolute;left:0;right:0;bottom:0;width:auto;height:var(--sheet-h,46%);flex:none;box-sizing:border-box;z-index:15;border-top:1px solid var(--line);border-right:none;border-radius:14px 14px 0 0}
+  body[data-view=edit] #build{display:flex;position:absolute;left:0;right:0;bottom:0;width:auto;height:var(--sheet-h,30px);flex:none;box-sizing:border-box;z-index:15;border-top:1px solid var(--line);border-right:none;border-radius:14px 14px 0 0}
   body[data-view=code] #build{display:none}
   body[data-sheet=min] #build{overflow:hidden}
   body[data-sheet=min] #build>:not(.sgrab){visibility:hidden}
