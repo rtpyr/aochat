@@ -492,7 +492,6 @@ const zstep=z=>z>=1?.25:.1;
 $('#zout').onclick=()=>setZoom(zoom-zstep(zoom-.001));
 $('#zin').onclick=()=>setZoom(zoom+zstep(zoom));
 $('#zval').onclick=()=>setZoom(1);
-$('#zfit').onclick=()=>{ const h=$('#pvbox').clientHeight; setZoom(pvH?Math.min(1,(h-24)/pvH):1); };
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
