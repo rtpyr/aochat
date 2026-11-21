@@ -116,7 +116,7 @@ pre{flex:1;margin:0;overflow:auto;padding:10px;font-family:var(--mono);font-size
 .pmenu button:hover,.pmenu button:focus-visible{background:var(--accent-bg)}
 .pmenu .danger{color:var(--warn)}
 .pmenu hr{border:0;border-top:1px solid var(--line);margin:5px 0}
-.notice{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--accent-bg);color:var(--ink);font-size:12px;line-height:1.4}
+.notice{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--badge-red);color:var(--warn);font-size:12px;line-height:1.4}
 .notice #noticetx{flex:1 1 320px}
 .notice button{padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
 .notice button:hover{border-color:var(--accent);color:var(--accent)}
