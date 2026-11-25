@@ -753,8 +753,204 @@ function setTheme(t){ document.documentElement.setAttribute('data-theme',t);
   $('#theme').setAttribute('aria-checked',String(t==='dark'));
   try{ localStorage.setItem('aochat-theme',t); }catch(e){}
   if($('#pv').getAttribute('srcdoc')) render(); }   // repaint the page behind the phone
-$('#theme').onclick=()=>setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+$('#theme').onclick=()=>{ const d=document.documentElement.getAttribute('data-theme')==='dark'; thApply(null,d?'light':'dark'); };
 $('#theme').setAttribute('aria-checked',String(document.documentElement.getAttribute('data-theme')==='dark'));
+/* ===== AO3 site skin -> studio theme =====
+   A site skin is plain CSS that restyles AO3's own pages, so it can't be dropped into this page
+   as-is. Instead the CSS is parsed, the rules that decide AO3's page colours are found by
+   selector (body, a, .dropdown, fieldset, input ...), the cascade is replayed (specificity,
+   !important, source order, parent-less), and the result is turned into the studio's own colour
+   variables. Only colours and the body font are read; no skin CSS is ever injected. */
+const SkinTheme=(()=>{
+  const cx=document.createElement('canvas').getContext('2d');
+  const SENT='#010203';
+  function col(v){ v=String(v||'').trim().toLowerCase();
+    if(!v||v==='inherit'||v==='initial'||v==='unset'||v==='currentcolor'||v==='none') return null;
+    if(v==='transparent') return [0,0,0,0];
+    cx.fillStyle=SENT; cx.fillStyle=v; const s=cx.fillStyle;
+    if(s===SENT&&v!==SENT&&v!=='rgb(1,2,3)'&&v!=='rgb(1, 2, 3)') return null;
+    if(s[0]==='#') return [parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16),1];
+    const m=s.match(/[\d.]+/g); return m?[+m[0],+m[1],+m[2],m[3]==null?1:+m[3]]:null; }
+  // first colour in a value such as "1px solid #ddd", "url(a.png) #fff" or "linear-gradient(#fff,#eee)"
+  function firstColor(val){ val=String(val||'');
+    const grad=val.match(/gradient\(([^]*)\)/i); if(grad) val=grad[1];
+    const toks=[]; let d=0,cur='';
+    for(const ch of val){ if(ch==='(')d++; if(ch===')')d--; if((ch===' '||ch===',')&&d===0){ if(cur) toks.push(cur); cur=''; } else cur+=ch; }
+    if(cur) toks.push(cur);
+    for(const t of toks){ if(/^url\(/i.test(t)) continue; const c=col(t); if(c&&c[3]>0.5) return c; }
+    return null; }
+  const mix=(a,b,t)=>[0,1,2].map(i=>a[i]+(b[i]-a[i])*t).concat([1]);       // t=0 -> a, t=1 -> b
+  const hex=c=>'#'+c.slice(0,3).map(n=>Math.max(0,Math.min(255,Math.round(n))).toString(16).padStart(2,'0')).join('');
+  const lum=c=>{ const f=n=>{n/=255;return n<=.03928?n/12.92:Math.pow((n+.055)/1.055,2.4)}; return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2]); };
+  const ratio=(a,b)=>{ const x=lum(a),y=lum(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); };
+
+  /* ---------- CSS parsing ---------- */
+  function splitTop(s,sep){ const out=[]; let d=0,q='',cur='';
+    for(let i=0;i<s.length;i++){ const ch=s[i];
+      if(q){ cur+=ch; if(ch===q&&s[i-1]!=='\\') q=''; continue; }
+      if(ch==='"'||ch==="'"){ q=ch; cur+=ch; continue; }
+      if(ch==='(')d++; if(ch===')')d--;
+      if(ch===sep&&d===0){ out.push(cur); cur=''; } else cur+=ch; }
+    out.push(cur); return out; }
+  function parse(css,media,rules,state){
+    let i=0;
+    while(i<css.length){
+      const o=css.indexOf('{',i); if(o<0) break;
+      const prelude=css.slice(i,o).trim();
+      let d=1,j=o+1; for(;j<css.length&&d>0;j++){ if(css[j]==='{')d++; else if(css[j]==='}')d--; }
+      const body=css.slice(o+1,j-1); i=j;
+      if(prelude[0]==='@'){ if(/^@media/i.test(prelude)) parse(body,prelude.slice(6).trim().toLowerCase(),rules,state); continue; }
+      const decls=[]; for(const part of splitTop(body,';')){ const k=part.indexOf(':'); if(k<1) continue;
+        const prop=part.slice(0,k).trim().toLowerCase(); let val=part.slice(k+1).trim(); const imp=/!\s*important\s*$/i.test(val);
+        if(imp) val=val.replace(/\s*!\s*important\s*$/i,''); if(prop&&val) decls.push([prop,val,imp]); }
+      const sels=splitTop(prelude,',').map(s=>s.trim().replace(/\s+/g,' ').toLowerCase()).filter(Boolean);
+      if(sels.length&&decls.length) rules.push({sels,decls,media,order:state.n++});
+    } }
+  const MEDIA_SKIP=/\b(print|speech|aural|braille|embossed|handheld|projection|tty|tv)\b|max-width|min-width|orientation|hover|resolution/;
+  function mediaKind(m){ if(!m) return 'base'; if(/prefers-color-scheme:\s*dark/.test(m)) return 'dark'; if(/prefers-color-scheme:\s*light/.test(m)) return 'light';
+    return MEDIA_SKIP.test(m)?'skip':'base'; }
+  function spec(sel){ const ids=(sel.match(/#[\w-]+/g)||[]).length, cls=(sel.match(/\.[\w-]+|\[[^\]]*\]|:[\w-]+/g)||[]).length;
+    const el=sel.replace(/#[\w-]+|\.[\w-]+|\[[^\]]*\]|::?[\w-]+(\([^)]*\))?/g,' ').split(/[\s>+~]+/).filter(t=>/^[a-z]/.test(t)).length;
+    return ids*10000+cls*100+el; }
+  const norm=s=>s.replace(/:(link|visited)\b/g,'').replace(/\s*([>+~])\s*/g,' $1 ').replace(/\s+/g,' ').trim();
+  const STATE=/:(hover|focus|active|before|after|first|last|nth|not|has|checked|disabled|target|empty|only)|::/;
+
+  /* ---------- what decides each colour on AO3's pages ---------- */
+  const T={
+    page:   {s:['html','body','#outer'],                                         p:['background','background-color']},
+    panel:  {s:['.dropdown','.secondary','.toggled form','.dynamic form'],       p:['background','background-color']},
+    card:   {s:['.listbox .index','fieldset','form dl','li.blurb','.blurb','th'],p:['background','background-color']},
+    ink:    {s:['html','body','#main','.userstuff'],                              p:['color']},
+    link:   {s:['a','#main a','.userstuff a','.blurb h4 a'],                     p:['color']},
+    head:   {s:['#header .primary','#header','#footer'],                         p:['background','background-color']},
+    muted:  {s:['.footnote','.meta','.datetime','.stats','.blurb .stats'],       p:['color']},
+    line:   {s:['li.blurb','.blurb','fieldset','form dl','.listbox','#dashboard','.index'],p:['border','border-color','border-top-color','border-bottom-color']},
+    field:  {s:['input','textarea','select','input[type="text"]'],               p:['background','background-color']},
+    font:   {s:['html','body'],                                                  p:['font-family','font']}
+  };
+  function solve(rules,kinds){ const best={};
+    for(const r of rules){ if(!kinds.includes(mediaKind(r.media))) continue;
+      const bonus=mediaKind(r.media)==='base'?0:1e6;                    // a colour-scheme block beats plain rules
+      for(const raw of r.sels){ if(STATE.test(raw)) continue; const sel=norm(raw);
+        for(const key in T){ if(!T[key].s.includes(sel)) continue;
+          for(const [p,v,imp] of r.decls){ if(!T[key].p.includes(p)) continue;
+            const cand={v,p,imp,w:(imp?1e12:0)+bonus+spec(sel)*1000+r.order*1e-3};
+            if(!best[key]||cand.w>=best[key].w) best[key]=cand; } } } }
+    return best; }
+  function resolveVars(rules){ const vars={};
+    for(const r of rules) if(r.sels.some(s=>s===':root'||s==='html'||s==='body')) for(const [p,v] of r.decls) if(p.startsWith('--')) vars[p]=v;
+    return v=>String(v).replace(/var\(\s*(--[\w-]+)\s*(?:,\s*([^)]*))?\)/g,(m,n,f)=>vars[n]!=null?vars[n]:(f||'')); }
+  function fontOf(c){ if(!c) return null; let v=c.v;
+    if(c.p==='font'){ const m=v.match(/(?:^|\s)(?:\d*\.?\d+(?:px|em|rem|%|pt)|(?:x{1,2}-)?(?:small|medium|large))(?:\/\S+)?\s+(.+)$/i); if(!m) return null; v=m[1]; }
+    v=v.replace(/!important/i,'').trim(); if(/^(inherit|initial|unset)$/i.test(v)||!/^[\w\s,'"\-.]{2,200}$/.test(v)) return null; return v; }
+
+  function build(rules,resolve,kinds,name){
+    const b=solve(rules,kinds), got={}, miss=[];
+    const pick=(k)=>{ if(!b[k]) return null; const v=resolve(b[k].v); const c=firstColor(v); if(c) got[k]=1; return c; };
+    let page=pick('page'), panelC=pick('panel'), card=pick('card'), ink=pick('ink'), link=pick('link'), head=pick('head'),
+        muted=pick('muted'), line=pick('line'), field=pick('field');
+    const AO3={page:[255,255,255,1],ink:[42,42,42,1],link:[153,0,0,1],line:[221,221,221,1]};      // AO3's own default skin
+    if(!page&&!panelC) miss.push('background');
+    if(!ink) miss.push('text colour'); if(!link&&!head) miss.push('link / accent colour');
+    page=page||panelC||AO3.page; ink=ink||AO3.ink;
+    if(page[3]<1) page=mix(AO3.page,page.slice(0,3),page[3]);
+    const dark=lum(page)<0.35, scheme=dark?'dark':'light';
+    const panel=page;                                               // studio panels sit on the skin's page colour
+    let accent=link||(head&&head[3]>0.5?head:null)||AO3.link;
+    const notes=[];
+    if(ratio(ink,panel)<4.5){ const t=dark?[255,255,255,1]:[0,0,0,1]; let k=0,n=ink; while(ratio(n,panel)<4.5&&k<10){ n=mix(n,t,.2); k++; } ink=n; notes.push('Text colour was adjusted for readability.'); }
+    if(ratio(accent,panel)<3){ const t=dark?[255,255,255,1]:[0,0,0,1]; let k=0,n=accent; while(ratio(n,panel)<3&&k<12){ n=mix(n,t,.15); k++; } accent=n; notes.push('Accent colour was adjusted so it stands out.'); }
+    const bg=dark?mix(panel,[0,0,0,1],.35):mix(panel,ink,.045);
+    const cardCol=card&&card[3]>0.5?card:null;
+    const vars={
+      '--bg':hex(bg),'--panel':hex(panel),'--ink':hex(ink),
+      '--muted':hex(muted&&ratio(muted,panel)>=3?muted:mix(ink,panel,.4)),
+      '--line':hex(line&&ratio(line,panel)>1.05?line:mix(panel,ink,dark?.22:.14)),
+      '--accent':hex(accent),
+      '--field':hex(field&&field[3]>0.5?field:(dark?mix(panel,ink,.06):panel)),
+      '--card':hex(cardCol?cardCol:mix(panel,ink,dark?.04:.015)),
+      '--code':hex(mix(panel,dark?[0,0,0,1]:ink,dark?.3:.03)),
+      '--accent-bg':hex(mix(panel,accent,dark?.22:.12)),
+      '--badge-bg':hex(mix(panel,ink,dark?.12:.07)),
+      '--faint':hex(mix(panel,ink,dark?.1:.05)),
+      '--thumb':hex(mix(panel,ink,.28)),'--thumb-hover':hex(mix(panel,ink,.45)),
+      '--on-accent':ratio([255,255,255,1],accent)>=ratio([17,17,17,1],accent)?'#ffffff':'#111111',
+      '--badge-red':dark?'#4a2c24':'#fdeee9'
+    };
+    const f=fontOf(b.font&&(b.font.v=resolve(b.font.v),b.font)); if(f) { vars['--sans']=f+','+'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif'; got.font=1; }
+    const names={page:'background',ink:'text',link:'links',head:'header',line:'borders',card:'blocks',field:'form fields',muted:'secondary text',font:'font',panel:'menus'};
+    const found=Object.keys(got).map(k=>names[k]).filter(Boolean);
+    return {name,scheme,vars,found,missing:miss,notes}; }
+
+  function convert(css,name){
+    css=String(css||'').replace(/\/\*[\s\S]*?\*\//g,'');
+    if(css.length>300000) return {error:'That CSS is too large (over 300 KB).'};
+    const rules=[],state={n:0}; parse(css,'',rules,state);
+    if(!rules.length) return {error:'No CSS rules were found in that text.'};
+    const resolve=resolveVars(rules);
+    const hasDark=rules.some(r=>mediaKind(r.media)==='dark'), hasLight=rules.some(r=>mediaKind(r.media)==='light');
+    const nm=(name||'').trim()||'Imported skin', out=[];
+    if(hasDark||hasLight){ out.push(build(rules,resolve,['base','light'],nm+(hasDark?' (light)':''))); if(hasDark) out.push(build(rules,resolve,['base','dark'],nm+' (dark)')); }
+    else out.push(build(rules,resolve,['base'],nm));
+    if(out.every(t=>!t.found.length)) return {error:'No page colours were found. Use the CSS of a site skin (one that styles body, links, the header, etc.). A work skin only styles a story, so it has no page colours.'};
+    return {themes:out}; }
+  return {convert};
+})();
+
+/* ---- themes: saved list, apply, dialog (all local to this browser) ---- */
+const TH={list:'aochat-themes',act:'aochat-skin',max:20,
+  vars:['--bg','--panel','--ink','--muted','--line','--accent','--field','--card','--code','--accent-bg','--badge-bg','--faint','--thumb','--thumb-hover','--on-accent','--badge-red','--sans']};
+const BUILTIN=[{id:'',name:'Light',scheme:'light',sw:['#f4f4f2','#ffffff','#1d1d1f','#7a7d84']},{id:'dark',name:'Dark',scheme:'dark',sw:['#121214','#1b1b1e','#f4f4f6','#d6d8de']}];
+function thLoad(){ try{ const a=JSON.parse(localStorage.getItem(TH.list)||'[]');
+  return Array.isArray(a)?a.filter(t=>t&&typeof t.id==='string'&&t.vars&&/^(light|dark)$/.test(t.scheme)).slice(0,TH.max):[]; }catch(e){ return []; } }
+function thSave(a){ try{ localStorage.setItem(TH.list,JSON.stringify(a)); return true; }catch(e){ return false; } }
+const thActive=()=>{ try{ return localStorage.getItem(TH.act)||''; }catch(e){ return ''; } };
+function thApply(t,scheme){
+  const r=document.documentElement; TH.vars.forEach(p=>r.style.removeProperty(p));
+  if(t) for(const k in t.vars) if(TH.vars.includes(k)) r.style.setProperty(k,t.vars[k]);
+  try{ t?localStorage.setItem(TH.act,t.id):localStorage.removeItem(TH.act); }catch(e){}
+  setTheme(t?t.scheme:(scheme||r.getAttribute('data-theme')||'light')); }
+function thDraw(){
+  const box=$('#tlist'), saved=thLoad(), act=thActive(), cur=document.documentElement.getAttribute('data-theme');
+  box.textContent='';
+  const row=(t,builtin)=>{
+    const sw=builtin?t.sw:[t.vars['--bg'],t.vars['--panel'],t.vars['--ink'],t.vars['--accent']];
+    const on=builtin?(!act&&cur===t.scheme):act===t.id;
+    const w=document.createElement('div'); w.className='trw';
+    const b=document.createElement('button'); b.type='button'; b.className='topt'; b.setAttribute('role','radio'); b.setAttribute('aria-checked',String(on)); b.dataset.id=builtin?'builtin:'+t.scheme:t.id;
+    const s=document.createElement('span'); s.className='sw'; sw.forEach(c=>{ const i=document.createElement('i'); i.style.background=c; s.appendChild(i); });
+    const n=document.createElement('span'); n.className='tn'; n.textContent=t.name;
+    const k=document.createElement('span'); k.className='tk'; k.textContent=t.scheme==='dark'?'Dark':'Light';
+    b.append(s,n,k); w.appendChild(b);
+    if(!builtin){ const x=document.createElement('button'); x.type='button'; x.className='tdel'; x.dataset.del=t.id; x.title='Delete this theme'; x.setAttribute('aria-label','Delete theme '+t.name); x.textContent='\u00d7'; w.appendChild(x); }
+    box.appendChild(w); };
+  BUILTIN.forEach(t=>row(t,true)); saved.forEach(t=>row(t,false)); }
+function thMsg(text,err){ const m=$('#tmsg'); m.textContent=text; m.className=err?'err':''; }
+$('#thbtn').onclick=()=>{ thDraw(); thMsg(''); $('#tdlg').showModal(); };
+$('#tlist').onclick=e=>{
+  const del=e.target.closest('[data-del]'), pick=e.target.closest('.topt'); const saved=thLoad();
+  if(del){ const id=del.dataset.del, next=saved.filter(t=>t.id!==id); thSave(next);
+    if(thActive()===id) thApply(null,document.documentElement.getAttribute('data-theme')); thDraw(); thMsg('Theme deleted.'); return; }
+  if(!pick) return; const id=pick.dataset.id;
+  if(id.startsWith('builtin:')) thApply(null,id.slice(8)); else { const t=saved.find(x=>x.id===id); if(t) thApply(t); }
+  thDraw(); };
+$('#tpick').onclick=()=>$('#tfile').click();
+$('#tfile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
+  if(f.size>300000){ thMsg('That file is too large (over 300 KB).',true); return; }
+  const rd=new FileReader(); rd.onload=()=>{ $('#tcss').value=String(rd.result||''); if(!$('#tname').value.trim()) $('#tname').value=f.name.replace(/\.[^.]*$/,'').slice(0,60); thMsg('File loaded. Press Convert to theme.'); };
+  rd.onerror=()=>thMsg('Could not read that file.',true); rd.readAsText(f); };
+$('#tgo').onclick=()=>{
+  const res=SkinTheme.convert($('#tcss').value,$('#tname').value);
+  if(res.error){ thMsg(res.error,true); return; }
+  const saved=thLoad(); if(saved.length+res.themes.length>TH.max){ thMsg('You can keep up to '+TH.max+' themes. Delete one first.',true); return; }
+  const made=res.themes.map((t,i)=>Object.assign({id:'u'+Date.now().toString(36)+i},t));
+  if(!thSave(saved.concat(made))){ thMsg('Could not save the theme to browser storage.',true); return; }
+  const cur=document.documentElement.getAttribute('data-theme'), use=made.find(t=>t.scheme===cur)||made[0]; thApply(use);
+  const t0=made[0], parts=['Added '+made.map(t=>'\u201c'+t.name+'\u201d').join(' and ')+' and applied it.'];
+  if(t0.found.length) parts.push('Read: '+t0.found.join(', ')+'.');
+  if(t0.missing.length) parts.push('Not in the skin, so AO3\u2019s default was used for: '+t0.missing.join(', ')+'.');
+  parts.push(...t0.notes);
+  $('#tcss').value=''; $('#tname').value=''; thDraw(); thMsg(parts.join(' ')); };
 $('#undo').onclick=()=>{ if(hi>0){ hi--; restore(hist[hi]); } };
 $('#redo').onclick=()=>{ if(hi<hist.length-1){ hi++; restore(hist[hi]); } };
 window.addEventListener('keydown',e=>{
