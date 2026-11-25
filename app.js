@@ -923,7 +923,7 @@ const SkinTheme=(()=>{
 /* ---- themes: saved list, apply, dialog (all local to this browser) ---- */
 const TH={list:'aochat-themes',act:'aochat-skin',max:20,
   vars:['--bg','--panel','--ink','--muted','--line','--accent','--field','--card','--code','--accent-bg','--badge-bg','--faint','--thumb','--thumb-hover','--on-accent','--badge-red','--sans']};
-const BUILTIN=[{id:'',name:'Light',scheme:'light',sw:['#f4f4f2','#ffffff','#1d1d1f','#7a7d84']},{id:'dark',name:'Dark',scheme:'dark',sw:['#121214','#1b1b1e','#f4f4f6','#d6d8de']}];
+const BUILTIN=[{id:'',name:'Default',scheme:'light',sw:['#f4f4f2','#ffffff','#1d1d1f','#7a7d84']}];
 function thLoad(){ try{ const a=JSON.parse(localStorage.getItem(TH.list)||'[]');
   return Array.isArray(a)?a.filter(t=>t&&typeof t.id==='string'&&t.vars&&/^(light|dark)$/.test(t.scheme)).slice(0,TH.max):[]; }catch(e){ return []; } }
 function thSave(a){ try{ localStorage.setItem(TH.list,JSON.stringify(a)); return true; }catch(e){ return false; } }
@@ -948,12 +948,12 @@ function thDraw(){
   box.textContent='';
   const row=(t,builtin)=>{
     const sw=builtin?t.sw:[t.vars['--bg'],t.vars['--panel'],t.vars['--ink'],t.vars['--accent']];
-    const on=builtin?(!act&&cur===t.scheme):act===t.id;
+    const on=builtin?!act:act===t.id;
     const w=document.createElement('div'); w.className='trw';
     const b=document.createElement('button'); b.type='button'; b.className='topt'; b.setAttribute('role','radio'); b.setAttribute('aria-checked',String(on)); b.dataset.id=builtin?'builtin:'+t.scheme:t.id;
     const s=document.createElement('span'); s.className='sw'; sw.forEach(c=>{ const i=document.createElement('i'); i.style.background=c; s.appendChild(i); });
     const n=document.createElement('span'); n.className='tn'; n.textContent=t.name;
-    const k=document.createElement('span'); k.className='tk'; k.textContent=builtin?(t.scheme==='dark'?'Dark':'Light'):'Light + Dark';
+    const k=document.createElement('span'); k.className='tk'; k.textContent='Light + Dark';
     b.append(s,n,k); w.appendChild(b);
     if(!builtin){ const x=document.createElement('button'); x.type='button'; x.className='tdel'; x.dataset.del=t.id; x.title='Delete this theme'; x.setAttribute('aria-label','Delete theme '+t.name); x.textContent='\u00d7'; w.appendChild(x); }
     box.appendChild(w); };
@@ -965,7 +965,7 @@ $('#tlist').onclick=e=>{
   if(del){ const id=del.dataset.del, next=saved.filter(t=>t.id!==id); thSave(next);
     if(thActive()===id) thApply(null,document.documentElement.getAttribute('data-theme')); thDraw(); thMsg('Theme deleted.'); return; }
   if(!pick) return; const id=pick.dataset.id;
-  if(id.startsWith('builtin:')) thApply(null,id.slice(8)); else { const t=saved.find(x=>x.id===id); if(t) thApply(t,document.documentElement.getAttribute('data-theme')); }
+  if(id.startsWith('builtin:')) thApply(null,document.documentElement.getAttribute('data-theme')); else { const t=saved.find(x=>x.id===id); if(t) thApply(t,document.documentElement.getAttribute('data-theme')); }
   thDraw(); };
 $('#tpick').onclick=()=>$('#tfile').click();
 $('#tfile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
