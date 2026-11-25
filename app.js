@@ -279,7 +279,8 @@ function buildCss(k,w,h){
   border-radius: ${s.avR}; background: #d7dce0; color: #5b6770;
   font-size: 11px; font-weight: bold; margin-right: 7px;
 }
-.${P}-stack { display: inline-block; max-width: 78%; vertical-align: top; }
+.${P}-stack { display: inline-block; max-width: 62%; vertical-align: bottom; }
+.${P}-stack .${P}-bub { max-width: none; }
 .${P}-who { display: block; font-size: 11px; color: #3f4a52; margin: 0 0 3px; line-height: 1.2; }
 .${P}-ot { display: inline-block; vertical-align: bottom; font-size: 9.5px; color: #4a555e; margin: 0 3px; }
 
