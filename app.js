@@ -984,6 +984,12 @@ $('#tgal').onclick=e=>{
   const c=e.target.closest('[data-cp]'), u=e.target.closest('[data-gal]');
   if(c){ const s=AO3SKINS[+c.dataset.cp]; navigator.clipboard.writeText(s.css).then(()=>{ c.textContent='Copied'; setTimeout(()=>c.textContent='Copy CSS',1200); },()=>thMsg('Could not copy. Select the CSS in the box below instead.',true)); return; }
   if(u){ const s=AO3SKINS[+u.dataset.gal]; $('#tcss').value=s.css; $('#tname').value=s.name; $('#tgo').click(); const t=thLoad().find(x=>x.id===thActive()); if(t) thApply(t,t.scheme); } };
+$('#tpaste').onclick=()=>{
+  if(!navigator.clipboard||!navigator.clipboard.readText){ thMsg('This browser will not let the page read the clipboard. Paste into the box below instead.',true); return; }
+  navigator.clipboard.readText().then(t=>{
+    if(!String(t).trim()){ thMsg('The clipboard is empty.',true); return; }
+    const m=/^\s*\/\*aochat:(.*?)\*\//.exec(t); $('#tcss').value=t; $('#tname').value=m?m[1].trim().slice(0,60):$('#tname').value; $('#tgo').click();
+  },()=>thMsg('Could not read the clipboard. Allow it, or paste into the box below.',true)); };
 $('#tpick').onclick=()=>$('#tfile').click();
 $('#tfile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
   if(f.size>300000){ thMsg('That file is too large (over 300 KB).',true); return; }
