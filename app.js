@@ -721,6 +721,11 @@ const cp=(txt,btn)=>{navigator.clipboard.writeText(txt).then(()=>{
   const o=btn.textContent;btn.textContent='Copied';setTimeout(()=>btn.textContent=o,1200);});};
 $('#cpH').onclick=e=>cp($('#o-html').textContent,e.target);
 $('#cpC').onclick=e=>cp($('#o-css').textContent,e.target);
+/* the aochat helper extension announces itself; only then are the Send to AO3 buttons shown */
+const sendAO3=(kind,btn)=>{ window.postMessage({source:'aochat-page',type:'send-ao3',kind,text:$(kind==='css'?'#o-css':'#o-html').textContent},location.origin);
+  const o=btn.textContent; btn.textContent='Sent. Check the AO3 tab'; setTimeout(()=>btn.textContent=o,2500); };
+$('#sendC').onclick=e=>sendAO3('css',e.target); $('#sendH').onclick=e=>sendAO3('html',e.target);
+window.addEventListener('message',e=>{ const d=e.data; if(e.source===window&&e.origin===location.origin&&d&&d.source==='aochat-ext'&&d.type==='hello') $('#sendbar').hidden=false; });
 
 
 /* ---- undo / redo ----------------------------------------------------

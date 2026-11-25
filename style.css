@@ -91,6 +91,8 @@ pre{flex:1;margin:0;overflow:auto;padding:10px;font-family:var(--mono);font-size
 .copy{padding:6px 10px;border-top:1px solid var(--line);background:var(--panel);display:flex;gap:6px}
 .copy button{flex:1;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--field);color:var(--ink);cursor:pointer;font:inherit;font-size:11.5px}
 .copy button:hover{border-color:var(--accent);color:var(--accent)}
+.copy[hidden]{display:none}
+#sendbar{border-top:0;padding-top:0}
 .lint{flex:0 0 auto;max-height:130px;overflow:auto;border-top:1px solid var(--line);background:var(--panel);font-family:var(--mono);font-size:11px}
 .lrow{padding:3px 10px;border-bottom:1px solid var(--faint);color:var(--warn)}
 .lrow.ok{color:var(--ok);font-family:var(--sans);padding:7px 10px}
