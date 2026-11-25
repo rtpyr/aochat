@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "aochat helper",
+  "version": "1.0.0",
+  "description": "Adds a “Send to aochat” button on AO3 skin pages. Nothing is collected or sent anywhere except to the aochat page you open.",
+  "permissions": ["storage"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    { "matches": ["https://archiveofourown.org/skins/*"], "js": ["ao3.js"] },
+    { "matches": ["https://rtpyr.github.io/aochat/*"], "js": ["site.js"] }
+  ]
+}

@@ -990,6 +990,9 @@ $('#tpaste').onclick=()=>{
     if(!String(t).trim()){ thMsg('The clipboard is empty.',true); return; }
     const m=/^\s*\/\*aochat:(.*?)\*\//.exec(t); $('#tcss').value=t; $('#tname').value=m?m[1].trim().slice(0,60):$('#tname').value; $('#tgo').click();
   },()=>thMsg('Could not read the clipboard. Allow it, or paste into the box below.',true)); };
+window.addEventListener('message',e=>{
+  const d=e.data; if(e.source!==window||e.origin!==location.origin||!d||d.source!=='aochat-ext'||typeof d.css!=='string') return;
+  $('#thbtn').click(); $('#tcss').value=d.css.slice(0,300000); $('#tname').value=String(d.name||'').slice(0,60); $('#tgo').click(); });
 $('#tpick').onclick=()=>$('#tfile').click();
 $('#tfile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
   if(f.size>300000){ thMsg('That file is too large (over 300 KB).',true); return; }
