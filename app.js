@@ -959,7 +959,7 @@ function thDraw(){
     box.appendChild(w); };
   BUILTIN.forEach(t=>row(t,true)); saved.forEach(t=>row(t,false)); }
 function thMsg(text,err){ const m=$('#tmsg'); m.textContent=text; m.className=err?'err':''; }
-$('#thbtn').onclick=()=>{ thDraw(); thMsg(''); $('#tdlg').showModal(); };
+$('#thbtn').onclick=()=>{ thDraw(); thGal(); thMsg(''); $('#tdlg').showModal(); };
 $('#tlist').onclick=e=>{
   const del=e.target.closest('[data-del]'), pick=e.target.closest('.topt'); const saved=thLoad();
   if(del){ const id=del.dataset.del, next=saved.filter(t=>t.id!==id); thSave(next);
@@ -967,6 +967,23 @@ $('#tlist').onclick=e=>{
   if(!pick) return; const id=pick.dataset.id;
   if(id.startsWith('builtin:')) thApply(null,document.documentElement.getAttribute('data-theme')); else { const t=saved.find(x=>x.id===id); if(t) thApply(t,document.documentElement.getAttribute('data-theme')); }
   thDraw(); };
+function thGal(){
+  const box=$('#tgal'); box.textContent='';
+  AO3SKINS.forEach((s,i)=>{
+    const r=SkinTheme.convert(s.css,s.name), v=r.themes&&r.themes[0].vars;
+    const w=document.createElement('div'); w.className='trw';
+    const b=document.createElement('button'); b.type='button'; b.className='topt'; b.dataset.gal=i; b.title=s.note;
+    const sw=document.createElement('span'); sw.className='sw';
+    (v?[v['--bg'],v['--panel'],v['--ink'],v['--accent']]:['#eee','#fff','#222','#900']).forEach(c=>{ const e=document.createElement('i'); e.style.background=c; sw.appendChild(e); });
+    const n=document.createElement('span'); n.className='tn'; n.textContent=s.name;
+    const k=document.createElement('span'); k.className='tk'; k.textContent='by '+s.by;
+    b.append(sw,n,k);
+    const c=document.createElement('button'); c.type='button'; c.className='tcp'; c.dataset.cp=i; c.textContent='Copy CSS'; c.title='Copy this skin\u2019s CSS';
+    w.append(b,c); box.appendChild(w); }); }
+$('#tgal').onclick=e=>{
+  const c=e.target.closest('[data-cp]'), u=e.target.closest('[data-gal]');
+  if(c){ const s=AO3SKINS[+c.dataset.cp]; navigator.clipboard.writeText(s.css).then(()=>{ c.textContent='Copied'; setTimeout(()=>c.textContent='Copy CSS',1200); },()=>thMsg('Could not copy. Select the CSS in the box below instead.',true)); return; }
+  if(u){ const s=AO3SKINS[+u.dataset.gal]; $('#tcss').value=s.css; $('#tname').value=s.name; $('#tgo').click(); const t=thLoad().find(x=>x.id===thActive()); if(t) thApply(t,t.scheme); } };
 $('#tpick').onclick=()=>$('#tfile').click();
 $('#tfile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
   if(f.size>300000){ thMsg('That file is too large (over 300 KB).',true); return; }

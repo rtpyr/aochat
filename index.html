@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>aochat</title>
-<link rel="stylesheet" href="style.css?v=278ca1af">
+<link rel="stylesheet" href="style.css?v=ba734d64">
 <script>
 /* site theme only; the phone preview is never themed */
 (function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
@@ -55,6 +55,8 @@
   <h2>Themes</h2>
   <p>Choose how this page looks. To use an AO3 site skin, paste its CSS below and it is converted into a theme. Only its colours and font are read. Your chat mockups are never changed.</p>
   <div id="tlist" class="tlist" role="radiogroup" aria-label="Themes"></div>
+  <label class="f" id="lgal">Browse AO3 skins</label>
+  <div id="tgal" class="tlist" role="group" aria-labelledby="lgal"></div>
   <label class="f" for="tname">Import an AO3 skin</label>
   <input id="tname" type="text" maxlength="60" autocomplete="off" placeholder="Theme name (optional)">
   <textarea id="tcss" class="fld" rows="6" spellcheck="false" placeholder="Paste the skin CSS here, or choose a .css file"></textarea>
@@ -129,7 +131,8 @@
   <button data-v="preview" class="on" aria-pressed="true"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="1.8" width="9" height="14.4" rx="2"/><path d="M8 13.8h2"/></svg><span>Preview</span></button>
   <button data-v="code" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 5L2.5 9l4 4M11.5 5l4 4-4 4"/></svg><span>Code</span></button>
 </nav>
-<script src="store.js?v=278ca1af"></script>
-<script src="app.js?v=278ca1af"></script>
+<script src="store.js?v=ba734d64"></script>
+<script src="skins.js?v=ba734d64"></script>
+<script src="app.js?v=ba734d64"></script>
 </body>
 </html>
