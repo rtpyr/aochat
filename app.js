@@ -978,11 +978,9 @@ function thGal(){
     const n=document.createElement('span'); n.className='tn'; n.textContent=s.name;
     const k=document.createElement('span'); k.className='tk'; k.textContent='by '+s.by;
     b.append(sw,n,k);
-    const c=document.createElement('button'); c.type='button'; c.className='tcp'; c.dataset.cp=i; c.textContent='Copy CSS'; c.title='Copy this skin\u2019s CSS';
-    w.append(b,c); box.appendChild(w); }); }
+    w.append(b); box.appendChild(w); }); }
 $('#tgal').onclick=e=>{
-  const c=e.target.closest('[data-cp]'), u=e.target.closest('[data-gal]');
-  if(c){ const s=AO3SKINS[+c.dataset.cp]; navigator.clipboard.writeText(s.css).then(()=>{ c.textContent='Copied'; setTimeout(()=>c.textContent='Copy CSS',1200); },()=>thMsg('Could not copy. Select the CSS in the box below instead.',true)); return; }
+  const u=e.target.closest('[data-gal]');
   if(u){ const s=AO3SKINS[+u.dataset.gal]; $('#tcss').value=s.css; $('#tname').value=s.name; $('#tgo').click(); const t=thLoad().find(x=>x.id===thActive()); if(t) thApply(t,t.scheme); } };
 $('#tpaste').onclick=()=>{
   if(!navigator.clipboard||!navigator.clipboard.readText){ thMsg('This browser will not let the page read the clipboard. Paste into the box below instead.',true); return; }
