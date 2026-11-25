@@ -4,16 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>aochat</title>
-<link rel="stylesheet" href="style.css?v=28feb86d">
+<link rel="stylesheet" href="style.css?v=fd62095c">
 <script>
 /* site theme only; the phone preview is never themed */
 (function(){var t;try{t=localStorage.getItem('aochat-theme')}catch(e){}
  if(!t)t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
  document.documentElement.setAttribute('data-theme',t);
- try{var c,id=localStorage.getItem('aochat-skin'),a=JSON.parse(localStorage.getItem('aochat-themes')||'[]'),k;
-  for(k=0;k<a.length;k++)if(a[k].id===id){document.documentElement.setAttribute('data-theme',a[k].scheme);
-   for(var p in a[k].vars)document.documentElement.style.setProperty(p,a[k].vars[p]);
-   if(a[k].chrome){var s=document.createElement('style');s.id='thchrome',c=[];for(p in a[k].chrome)if(/^#[0-9a-f]{6}$/i.test(a[k].chrome[p]))c.push(p+':'+a[k].chrome[p]);s.textContent='header{'+c.join(';')+'}';document.head.appendChild(s);}}}catch(e){}})();
+ try{var v=JSON.parse(localStorage.getItem('aochat-skinv')||'null'),p,c=[];
+  if(v&&v.vars&&localStorage.getItem('aochat-skin')){document.documentElement.setAttribute('data-theme',v.scheme);
+   for(p in v.vars)document.documentElement.style.setProperty(p,v.vars[p]);
+   if(v.chrome){for(p in v.chrome)if(/^#[0-9a-f]{6}$/i.test(v.chrome[p]))c.push(p+':'+v.chrome[p]);
+    var s=document.createElement('style');s.id='thchrome';s.textContent='header{'+c.join(';')+'}';document.head.appendChild(s);}}}catch(e){}})();
 </script>
 </head>
 <body data-view="edit" data-sheet="min">
@@ -128,7 +129,7 @@
   <button data-v="preview" class="on" aria-pressed="true"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="1.8" width="9" height="14.4" rx="2"/><path d="M8 13.8h2"/></svg><span>Preview</span></button>
   <button data-v="code" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 5L2.5 9l4 4M11.5 5l4 4-4 4"/></svg><span>Code</span></button>
 </nav>
-<script src="store.js?v=28feb86d"></script>
-<script src="app.js?v=28feb86d"></script>
+<script src="store.js?v=fd62095c"></script>
+<script src="app.js?v=fd62095c"></script>
 </body>
 </html>

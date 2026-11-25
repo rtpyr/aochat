@@ -753,7 +753,7 @@ function setTheme(t){ document.documentElement.setAttribute('data-theme',t);
   $('#theme').setAttribute('aria-checked',String(t==='dark'));
   try{ localStorage.setItem('aochat-theme',t); }catch(e){}
   if($('#pv').getAttribute('srcdoc')) render(); }   // repaint the page behind the phone
-$('#theme').onclick=()=>{ const d=document.documentElement.getAttribute('data-theme')==='dark'; thApply(null,d?'light':'dark'); };
+$('#theme').onclick=()=>{ const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark', t=thLoad().find(x=>x.id===thActive()); thApply(t||null,next); };
 $('#theme').setAttribute('aria-checked',String(document.documentElement.getAttribute('data-theme')==='dark'));
 /* ===== AO3 site skin -> studio theme =====
    A site skin is plain CSS that restyles AO3's own pages, so it can't be dropped into this page
@@ -905,11 +905,19 @@ const SkinTheme=(()=>{
     const resolve=resolveVars(rules);
     const hasDark=rules.some(r=>mediaKind(r.media)==='dark'), hasLight=rules.some(r=>mediaKind(r.media)==='light');
     const nm=(name||'').trim()||'Imported skin', out=[];
-    if(hasDark||hasLight){ out.push(build(rules,resolve,['base','light'],nm+(hasDark?' (light)':''))); if(hasDark) out.push(build(rules,resolve,['base','dark'],nm+' (dark)')); }
+    if(hasDark||hasLight){ out.push(build(rules,resolve,['base','light'],nm)); if(hasDark) out.push(build(rules,resolve,['base','dark'],nm)); }
     else out.push(build(rules,resolve,['base'],nm));
+    if(out.length===2){ const [l,d]=out; if(l.scheme!==d.scheme){ l.alt={scheme:d.scheme,vars:d.vars,chrome:d.chrome}; out.length=1; } }
     if(out.every(t=>!t.found.length)) return {error:'No page colours were found. Use the CSS of a site skin (one that styles body, links, the header, etc.). A work skin only styles a story, so it has no page colours.'};
     return {themes:out}; }
-  return {convert};
+  /* the opposite light/dark version of a theme that has only one: same hues, flipped lightness */
+  function altOf(t){ const g=k=>col(t.vars[k]), toDark=t.scheme==='light';
+    const panel=g('--panel'), ink=g('--ink'), acc=g('--accent'); if(!panel||!ink||!acc) return null;
+    const p2=toDark?mix(panel,BLACK,.86):mix(panel,WHITE,.9), i2=toDark?mix(WHITE,panel,.1):mix(BLACK,panel,.14);
+    const vars=palette(p2,i2,toDark?toward(acc,p2,3):toward(acc,p2,3),{});
+    if(t.vars['--sans']) vars['--sans']=t.vars['--sans'];
+    return {scheme:toDark?'dark':'light',vars,chrome:t.chrome||null}; }
+  return {convert,altOf};
 })();
 
 /* ---- themes: saved list, apply, dialog (all local to this browser) ---- */
@@ -924,12 +932,17 @@ function thChrome(t){ let s=document.getElementById('thchrome');
   if(!(t&&t.chrome)){ if(s) s.remove(); return; }
   if(!s){ s=document.createElement('style'); s.id='thchrome'; document.head.appendChild(s); }
   s.textContent='header{'+Object.keys(t.chrome).filter(k=>TH.vars.includes(k)&&/^#[0-9a-f]{6}$/i.test(t.chrome[k])).map(k=>k+':'+t.chrome[k]).join(';')+'}'; }
+function thVariant(t,scheme){            // the version of a saved theme that matches light or dark mode
+  if(!t||t.scheme===scheme) return t;
+  const alt=t.alt||SkinTheme.altOf(t); return alt?Object.assign({},t,{scheme:alt.scheme,vars:alt.vars,chrome:alt.chrome}):t; }
 function thApply(t,scheme){
   const r=document.documentElement; TH.vars.forEach(p=>r.style.removeProperty(p));
-  if(t) for(const k in t.vars) if(TH.vars.includes(k)) r.style.setProperty(k,t.vars[k]);
-  thChrome(t);
-  try{ t?localStorage.setItem(TH.act,t.id):localStorage.removeItem(TH.act); }catch(e){}
-  setTheme(t?t.scheme:(scheme||r.getAttribute('data-theme')||'light')); }
+  const v=thVariant(t,scheme||(t?r.getAttribute('data-theme'):null)||'light');
+  if(v) for(const k in v.vars) if(TH.vars.includes(k)) r.style.setProperty(k,v.vars[k]);
+  thChrome(v);
+  try{ if(v){ localStorage.setItem(TH.act,t.id); localStorage.setItem('aochat-skinv',JSON.stringify({scheme:v.scheme,vars:v.vars,chrome:v.chrome||null})); }
+       else { localStorage.removeItem(TH.act); localStorage.removeItem('aochat-skinv'); } }catch(e){}
+  setTheme(v?v.scheme:(scheme||r.getAttribute('data-theme')||'light')); }
 function thDraw(){
   const box=$('#tlist'), saved=thLoad(), act=thActive(), cur=document.documentElement.getAttribute('data-theme');
   box.textContent='';
@@ -940,7 +953,7 @@ function thDraw(){
     const b=document.createElement('button'); b.type='button'; b.className='topt'; b.setAttribute('role','radio'); b.setAttribute('aria-checked',String(on)); b.dataset.id=builtin?'builtin:'+t.scheme:t.id;
     const s=document.createElement('span'); s.className='sw'; sw.forEach(c=>{ const i=document.createElement('i'); i.style.background=c; s.appendChild(i); });
     const n=document.createElement('span'); n.className='tn'; n.textContent=t.name;
-    const k=document.createElement('span'); k.className='tk'; k.textContent=t.scheme==='dark'?'Dark':'Light';
+    const k=document.createElement('span'); k.className='tk'; k.textContent=builtin?(t.scheme==='dark'?'Dark':'Light'):'Light + Dark';
     b.append(s,n,k); w.appendChild(b);
     if(!builtin){ const x=document.createElement('button'); x.type='button'; x.className='tdel'; x.dataset.del=t.id; x.title='Delete this theme'; x.setAttribute('aria-label','Delete theme '+t.name); x.textContent='\u00d7'; w.appendChild(x); }
     box.appendChild(w); };
@@ -952,7 +965,7 @@ $('#tlist').onclick=e=>{
   if(del){ const id=del.dataset.del, next=saved.filter(t=>t.id!==id); thSave(next);
     if(thActive()===id) thApply(null,document.documentElement.getAttribute('data-theme')); thDraw(); thMsg('Theme deleted.'); return; }
   if(!pick) return; const id=pick.dataset.id;
-  if(id.startsWith('builtin:')) thApply(null,id.slice(8)); else { const t=saved.find(x=>x.id===id); if(t) thApply(t); }
+  if(id.startsWith('builtin:')) thApply(null,id.slice(8)); else { const t=saved.find(x=>x.id===id); if(t) thApply(t,document.documentElement.getAttribute('data-theme')); }
   thDraw(); };
 $('#tpick').onclick=()=>$('#tfile').click();
 $('#tfile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
@@ -965,7 +978,7 @@ $('#tgo').onclick=()=>{
   const saved=thLoad(); if(saved.length+res.themes.length>TH.max){ thMsg('You can keep up to '+TH.max+' themes. Delete one first.',true); return; }
   const made=res.themes.map((t,i)=>Object.assign({id:'u'+Date.now().toString(36)+i},t));
   if(!thSave(saved.concat(made))){ thMsg('Could not save the theme to browser storage.',true); return; }
-  const cur=document.documentElement.getAttribute('data-theme'), use=made.find(t=>t.scheme===cur)||made[0]; thApply(use);
+  thApply(made[0],document.documentElement.getAttribute('data-theme'));
   const t0=made[0], parts=['Added '+made.map(t=>'\u201c'+t.name+'\u201d').join(' and ')+' and applied it.'];
   if(t0.found.length) parts.push('Read: '+t0.found.join(', ')+'.');
   if(t0.missing.length) parts.push('Not in the skin, so AO3\u2019s default was used for: '+t0.missing.join(', ')+'.');
