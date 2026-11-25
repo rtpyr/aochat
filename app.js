@@ -823,7 +823,7 @@ const SkinTheme=(()=>{
     card:   {s:['li.blurb','.blurb','.wrapper','.listbox','.listbox .index','fieldset','#main fieldset','form dl','th','.dropdown','.secondary'],p:['background','background-color']},
     ink:    {s:['html','body','#main','.userstuff'],                              p:['color']},
     link:   {s:['a','#main a','.userstuff a','.blurb h4 a'],                     p:['color']},
-    head:   {s:['#header'],                                                      p:['background','background-color']},
+    head:   {s:['#header','#header ul.primary','#header .primary'],                                                      p:['background','background-color']},
     hink:   {s:['#header a','#header .heading a','#header .actions a','#header .user a','#header .primary a','#header .current'],p:['color']},
     muted:  {s:['.footnote','.meta','.datetime','.stats','.blurb .stats'],       p:['color']},
     line:   {s:['li.blurb','.blurb','fieldset','form dl','.listbox','#dashboard','.index','.actions a','.current'],p:['border','border-color','border-top-color','border-bottom-color']},
