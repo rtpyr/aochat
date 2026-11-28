@@ -1,7 +1,7 @@
 # aochat
 
 ![Status](https://img.shields.io/badge/status-work%20in%20progress-red)
-![AI Assisted](https://img.shields.io/badge/Development-AI%20Assisted-2563EB)
+
 
 > [!WARNING]
 > **This project is still a work in progress: please do not use it yet.**
