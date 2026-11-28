@@ -189,6 +189,8 @@ dialog input{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid v
 .cmd:hover:not(:disabled),.cmd[aria-expanded=true]{background:var(--accent-bg)}
 .cmd:active:not(:disabled){background:var(--badge-bg)}
 .cmd:disabled{opacity:.35;cursor:default}
+a.cmd{text-decoration:none}
+.cmd:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .cmd.danger svg{color:var(--warn)}
 .cmd .ech{display:inline-block;width:5px;height:5px;margin-left:3px;border-right:1.4px solid currentColor;border-bottom:1.4px solid currentColor;transform:rotate(45deg) translate(-1px,-1px)}
 
