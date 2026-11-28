@@ -229,7 +229,36 @@ function buildCss(k,w,h){
   background: ${s.head}; color: ${s.headInk}; margin: 0;
   padding: 9px 14px 3px; height: 25px; font-size: 10.5px; font-weight: bold;
 }
-.${P}-bar::after { content: "▂▄▆ ▭"; float: right; font-size: 9px; letter-spacing: 1px; }
+/* signal bars, wifi arcs and battery are drawn with plain CSS shapes (no svg, no images) */
+.${P}-sig {
+  float: right; width: 15px; height: 10px; margin: 1px 0 0 6px;
+  background-image: linear-gradient(${s.headInk}, ${s.headInk}), linear-gradient(${s.headInk}, ${s.headInk}),
+    linear-gradient(${s.headInk}, ${s.headInk}), linear-gradient(${s.headInk}, ${s.headInk});
+  background-repeat: no-repeat;
+  background-size: 3px 4px, 3px 6px, 3px 8px, 3px 10px;
+  background-position: 0 100%, 4px 100%, 8px 100%, 12px 100%;
+}
+.${P}-wifi {
+  float: right; position: relative; overflow: hidden; width: 16px; height: 8px; margin: 2px 0 0 6px;
+}
+.${P}-wifi::before, .${P}-wifi::after {
+  content: ""; position: absolute; box-sizing: border-box; border: 2px solid transparent;
+  border-top-color: ${s.headInk}; border-radius: 50%;
+}
+.${P}-wifi::before { width: 16px; height: 16px; left: 0; top: 0; }
+.${P}-wifi::after { width: 8px; height: 8px; left: 4px; top: 4px; }
+.${P}-bat {
+  float: right; position: relative; width: 17px; height: 8px; margin: 1px 4px 0 6px;
+  border: 1px solid ${s.headInk}; border-radius: 3px; opacity: 0.85;
+}
+.${P}-bat::before {
+  content: ""; position: absolute; left: 1px; top: 1px; right: 1px; bottom: 1px;
+  background: ${s.headInk}; border-radius: 1px;
+}
+.${P}-bat::after {
+  content: ""; position: absolute; right: -4px; top: 2px; width: 2px; height: 4px;
+  background: ${s.headInk}; border-radius: 0 2px 2px 0;
+}
 
 /* ---- header: back chevron is decoration ---- */
 .${P}-head {
@@ -341,7 +370,7 @@ function buildHtml(st){
       +esc(m.text)+` <span class="${P}-time">`+rd+esc(m.time)+tick+`</span></span></p>`;
   }).join('\n');
   return `<div class="${P}-phone">
-  <p class="${P}-bar">9:41</p>
+  <p class="${P}-bar"><span class="${P}-bat"></span><span class="${P}-wifi"></span><span class="${P}-sig"></span>9:41</p>
   <p class="${P}-head"><span class="${P}-av">${esc(ini)}</span><span class="${P}-nm">${esc(st.name)}</span><span class="${P}-on">${esc(st.status)}</span></p>
   <div class="${P}-body">
     <p class="${P}-day"><span class="${P}-daytag">${esc(o.day||'Today')}</span></p>
