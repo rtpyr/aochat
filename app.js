@@ -229,7 +229,7 @@ function buildCss(k,w,h){
   background: ${s.head}; color: ${s.headInk}; margin: 0;
   padding: 9px 14px 3px; height: 25px; font-size: 10.5px; font-weight: bold;
 }
-.${P}-bar::after { content: "▮▮▮"; float: right; font-size: 9px; letter-spacing: 1px; }
+.${P}-bar::after { content: "▂▄▆ ▭"; float: right; font-size: 9px; letter-spacing: 1px; }
 
 /* ---- header: back chevron is decoration ---- */
 .${P}-head {
